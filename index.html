@@ -1,1984 +1,407 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>مغامرة القراءة الحركية V13.6</title>
-
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مغامرة القراءة الحركية V14</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Tahoma,Arial,sans-serif;
-  background:#06192c;
-  color:#fff;
-  overflow:hidden;
-}
-#game{
-  height:100vh;
-  position:relative;
-  overflow:hidden;
-  background:linear-gradient(#55c9f4 0 25%,#b8e883 25% 34%,#303947 34%);
-}
-.cloud{
-  position:absolute;
-  background:#fff;
-  border-radius:50px;
-  opacity:.82;
-  animation:cloud 15s linear infinite;
-}
-.c1{width:150px;height:35px;top:12%;left:-170px}
-.c2{width:100px;height:28px;top:7%;left:-120px;animation-delay:7s}
-@keyframes cloud{to{left:105%}}
-
-.city{
-  position:absolute;
-  top:20%;
-  height:14%;
-  width:200%;
-  background:repeating-linear-gradient(
-    90deg,#f1cf86 0 70px,#9a7856 70px 78px,#e6b96c 78px 150px
-  );
-  animation:city 8s linear infinite;
-}
-@keyframes city{to{transform:translateX(50%)}}
-
-.road{
-  position:absolute;
-  left:2%;
-  right:2%;
-  top:34%;
-  bottom:-8%;
-  background:#37414e;
-  clip-path:polygon(39% 0,61% 0,100% 100%,0 100%);
-}
-.line{
-  position:absolute;
-  top:34%;
-  bottom:0;
-  width:6px;
-  background:repeating-linear-gradient(#fff 0 28px,transparent 28px 62px);
-  animation:road .48s linear infinite;
-  opacity:.72;
-}
-.l1{left:40%}
-.l2{left:60%}
-@keyframes road{to{background-position:0 62px}}
-
-.card{
-  position:absolute;
-  z-index:30;
-  top:18px;
-  left:50%;
-  transform:translateX(-50%);
-  min-width:44%;
-  text-align:center;
-  background:#fff;
-  color:#15263c;
-  border-radius:28px;
-  padding:10px 30px;
-  box-shadow:0 9px 0 #ffffff70;
-}
-#word{
-  font-size:clamp(44px,6vw,76px);
-  font-weight:900;
-  line-height:1.05;
-}
-.sub{
-  font-size:18px;
-  color:#526177;
-  margin-top:5px;
-}
-.avatarWrap{
-  position:absolute;
-  z-index:20;
-  left:50%;
-  bottom:8px;
-  width:285px;
-  height:365px;
-  transform:translateX(-50%);
-  transition:left .15s,bottom .15s;
-}
-#avatar{
-  width:100%;
-  height:100%;
-  filter:drop-shadow(0 10px 7px #0005);
-}
-.ob{
-  position:absolute;
-  z-index:8;
-  top:35%;
-  font-size:38px;
-  transform:translateX(-50%) scale(.2);
-  animation:approach 2.7s linear forwards;
-}
-@keyframes approach{
-  to{
-    top:94%;
-    transform:translateX(-50%) scale(2.4);
-  }
-}
-.hud{
-  position:absolute;
-  z-index:50;
-  top:18px;
-  right:18px;
-  display:flex;
-  gap:8px;
-}
-.chip{
-  background:#12304ddd;
-  padding:9px 14px;
-  border-radius:999px;
-  font-size:20px;
-  font-weight:900;
-}
-.cam{
-  position:absolute;
-  z-index:40;
-  left:14px;
-  bottom:14px;
-  width:155px;
-  aspect-ratio:4/3;
-  border:3px solid #fff;
-  border-radius:18px;
-  overflow:hidden;
-  background:#111;
-}
-video,canvas{
-  position:absolute;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transform:scaleX(-1);
-}
-canvas{z-index:2}
-#message{
-  position:absolute;
-  z-index:45;
-  left:50%;
-  top:27%;
-  transform:translateX(-50%);
-  font-size:31px;
-  font-weight:900;
-  text-shadow:0 3px 9px #0009;
-  text-align:center;
-}
-.overlay{
-  position:absolute;
-  z-index:100;
-  inset:0;
-  background:linear-gradient(#133456ee,#07182bf7);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-}
-.panel{
-  width:min(700px,94vw);
-  background:#fff;
-  color:#1d3048;
-  border-radius:34px;
-  padding:30px;
-  text-align:center;
-  box-shadow:0 25px 70px #0008;
-}
-.panel h1{font-size:43px;margin:0 0 8px}
-.panel p{color:#657488;line-height:1.7}
-button,input,select{
-  font:inherit;
-  border:0;
-  border-radius:14px;
-  padding:12px;
-}
-.start{
-  width:100%;
-  font-size:23px;
-  font-weight:900;
-  background:#ff6598;
-  color:#fff;
-  cursor:pointer;
-}
-.gear{
-  position:absolute;
-  z-index:80;
-  left:16px;
-  top:16px;
-  width:45px;
-  height:45px;
-  border-radius:50%;
-  font-size:20px;
-}
-#settings{
-  display:none;
-  position:absolute;
-  z-index:90;
-  left:16px;
-  top:68px;
-  width:315px;
-  background:#fffffff4;
-  color:#26384e;
-  border-radius:18px;
-  padding:15px;
-}
-.row{
-  display:grid;
-  gap:5px;
-  margin:8px 0;
-}
-.progress{
-  height:9px;
-  background:#dfe8f0;
-  border-radius:10px;
-  overflow:hidden;
-  margin:14px 0;
-}
-.bar{
-  height:100%;
-  width:0;
-  background:#5bd5a2;
-}
-.flash{animation:flash .45s}
-@keyframes flash{
-  50%{box-shadow:inset 0 0 80px 20px #ffe86c}
-}
-
-/* V13.6: نافذة التشخيص يمين أسفل بعيدًا عن الكاميرا */
-#speechDiag{
-  position:fixed;
-  right:14px;
-  left:auto;
-  bottom:14px;
-  z-index:99999;
-  background:#071b2fee;
-  color:white;
-  padding:12px 15px;
-  border-radius:16px;
-  font-family:Tahoma,Arial;
-  direction:rtl;
-  min-width:310px;
-  max-width:390px;
-  box-shadow:0 8px 25px #0007;
-  font-size:14px;
-}
-
-@media(max-width:700px){
-  .card{min-width:68%}
-  .cam{width:115px}
-  .avatarWrap{width:220px;height:300px}
-  .hud{top:auto;bottom:10px;right:10px}
-  #speechDiag{
-    right:8px;
-    bottom:80px;
-    min-width:250px;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<div id="sessionHUD"
-style="position:absolute;top:12px;right:12px;z-index:8;display:flex;gap:8px;flex-wrap:wrap;direction:rtl">
-  <div class="chip">👤 <span id="hudStudent">—</span></div>
-  <div class="chip">⏱️ <span id="roundClock">01:00</span></div>
-  <div class="chip">الطالب <span id="studentNumber">1</span>/<span id="targetNumber">10</span></div>
-</div>
-
-<div id="game">
-
-<div class="cloud c1"></div>
-<div class="cloud c2"></div>
-<div class="city"></div>
-<div class="road"></div>
-<div class="line l1"></div>
-<div class="line l2"></div>
-
-<div class="card">
-  <div id="word">مغامرة القراءة</div>
-  <div id="instruction" class="sub">اقرأ • تحرك • اجمع النجوم</div>
-</div>
-
-<div id="message"></div>
-
-<div class="hud">
-  <div class="chip">🎤 <span id="micState">انتظار</span></div>
-  <div class="chip">⭐ <span id="score">0</span></div>
-  <div class="chip">📚 <span id="count">0/0</span></div>
-</div>
-
-<div class="avatarWrap" id="aw">
-<svg id="avatar" viewBox="0 0 260 350">
-
-<ellipse cx="130" cy="336" rx="55" ry="11" fill="#000" opacity=".18"/>
-
-<line id="torso" x1="130" y1="108" x2="130" y2="215"
-stroke="#18a6b9" stroke-width="42" stroke-linecap="round"/>
-
-<line id="uaL" x1="110" y1="115" x2="82" y2="165"
-stroke="#f4b78f" stroke-width="20" stroke-linecap="round"/>
-
-<line id="faL" x1="82" y1="165" x2="68" y2="215"
-stroke="#f4b78f" stroke-width="17" stroke-linecap="round"/>
-
-<line id="uaR" x1="150" y1="115" x2="178" y2="165"
-stroke="#f4b78f" stroke-width="20" stroke-linecap="round"/>
-
-<line id="faR" x1="178" y1="165" x2="192" y2="215"
-stroke="#f4b78f" stroke-width="17" stroke-linecap="round"/>
-
-<line id="thL" x1="114" y1="210" x2="101" y2="270"
-stroke="#294b91" stroke-width="24" stroke-linecap="round"/>
-
-<line id="shL" x1="101" y1="270" x2="92" y2="326"
-stroke="#294b91" stroke-width="20" stroke-linecap="round"/>
-
-<line id="thR" x1="146" y1="210" x2="159" y2="270"
-stroke="#294b91" stroke-width="24" stroke-linecap="round"/>
-
-<line id="shR" x1="159" y1="270" x2="168" y2="326"
-stroke="#294b91" stroke-width="20" stroke-linecap="round"/>
-
-<g id="face">
-  <circle cx="130" cy="62" r="38" fill="#f4b78f"/>
-  <path d="M94 58 Q130 7 166 58 Q155 20 130 20 Q105 20 94 58" fill="#433026"/>
-  <circle cx="117" cy="62" r="4"/>
-  <circle cx="143" cy="62" r="4"/>
-  <path d="M116 79 Q130 91 144 79" fill="none" stroke="#a84f50" stroke-width="4"/>
-</g>
-
-</svg>
-</div>
-
-<div class="cam">
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="overlay"></canvas>
-
-  <div id="vu"
-  style="position:absolute;z-index:5;bottom:4px;left:5px;right:5px;height:7px;background:#ffffff55;border-radius:8px;overflow:hidden">
-    <div id="vuBar" style="height:100%;width:0;background:#fff"></div>
-  </div>
-</div>
-
-<button class="gear" id="gear">⚙️</button>
-
-<div id="settings">
-  <b>إعدادات المعلمة</b>
-
-  <div class="row">
-    المستوى
-    <select id="level">
-      <option value="1">1 — حروف</option>
-      <option value="2">2 — كلمات بسيطة</option>
-      <option value="3">3 — كلمة + حركة</option>
-      <option value="4">4 — كلمتان / تعليمات قصيرة</option>
-      <option value="5">5 — تحدي القراءة والحركة</option>
-    </select>
-  </div>
-
-  <div class="row">
-    الموسيقى
-    <select id="music">
-      <option value="on">تشغيل</option>
-      <option value="off">إيقاف</option>
-    </select>
-  </div>
-
-  <button id="recal">إعادة المعايرة</button>
-</div>
-
-<div id="startOverlay" class="overlay">
-<div class="panel">
-
-<h1>🚆 مغامرة القراءة</h1>
-
-<p>
-خمسة مستويات متدرجة. الشخصية تقلد جسم الطالب والمسار يظل متحركًا طوال اللعب.
-</p>
-
-<div class="progress">
-  <div id="calBar" class="bar"></div>
-</div>
-
-<div id="boot">اختاري المستوى من ⚙️ ثم اضغطي ابدأ.</div>
-
-<br>
-
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(620px,92vw);margin:12px auto;text-align:right">
-
-<label>
-اسم الطالب
-<input id="studentName" autocomplete="off" placeholder="اكتب اسم الطالب"
-style="width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;font-size:16px">
-</label>
-
-<label>
-الصف
-<select id="studentClass" style="width:100%;padding:10px;border-radius:12px;font-size:16px">
-<option value="">اختر الصف</option>
-<option>الأول</option>
-<option>الثاني</option>
-<option>الثالث</option>
-<option>الرابع</option>
-<option>الخامس</option>
-</select>
-</label>
-
-<label>
-مدة الجولة
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial;background:#06192c;color:#fff;overflow:hidden}
+#game{height:100vh;position:relative;overflow:hidden;background:linear-gradient(#55c9f4 0 25%,#b8e883 25% 34%,#303947 34%)}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:.82;animation:cloud 15s linear infinite}.c1{width:150px;height:35px;top:12%;left:-170px}.c2{width:100px;height:28px;top:7%;left:-120px;animation-delay:7s}@keyframes cloud{to{left:105%}}
+.city{position:absolute;top:20%;height:14%;width:200%;background:repeating-linear-gradient(90deg,#f1cf86 0 70px,#9a7856 70px 78px,#e6b96c 78px 150px);animation:city 8s linear infinite}@keyframes city{to{transform:translateX(50%)}}
+.road{position:absolute;left:2%;right:2%;top:34%;bottom:-8%;background:#37414e;clip-path:polygon(39% 0,61% 0,100% 100%,0 100%)}
+.line{position:absolute;top:34%;bottom:0;width:6px;background:repeating-linear-gradient(#fff 0 28px,transparent 28px 62px);animation:road .48s linear infinite;opacity:.72}.l1{left:40%}.l2{left:60%}@keyframes road{to{background-position:0 62px}}
+.card{position:absolute;z-index:30;top:18px;left:50%;transform:translateX(-50%);min-width:44%;text-align:center;background:#fff;color:#15263c;border-radius:28px;padding:10px 30px;box-shadow:0 9px 0 #ffffff70}
+#word{font-size:clamp(44px,6vw,76px);font-weight:900;line-height:1.05}.sub{font-size:18px;color:#526177;margin-top:5px}
+.avatarWrap{position:absolute;z-index:20;left:50%;bottom:8px;width:285px;height:365px;transform:translateX(-50%);transition:left .15s,bottom .15s}
+#avatar{width:100%;height:100%;filter:drop-shadow(0 10px 7px #0005)}
+.ob{position:absolute;z-index:8;top:35%;font-size:38px;transform:translateX(-50%) scale(.2);animation:approach 2.7s linear forwards}@keyframes approach{to{top:94%;transform:translateX(-50%) scale(2.4)}}
+.hud{position:absolute;z-index:50;top:18px;right:18px;display:flex;gap:8px}.chip{background:#12304ddd;padding:9px 14px;border-radius:999px;font-size:20px;font-weight:900}
+.cam{position:absolute;z-index:40;left:14px;bottom:14px;width:155px;aspect-ratio:4/3;border:3px solid #fff;border-radius:18px;overflow:hidden;background:#111}video,canvas{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}canvas{z-index:2}
+#message{position:absolute;z-index:45;left:50%;top:27%;transform:translateX(-50%);font-size:31px;font-weight:900;text-shadow:0 3px 9px #0009;text-align:center}
+#moveCue{display:none;position:absolute;z-index:46;left:50%;top:27%;transform:translateX(-50%);width:190px;height:190px;background:#fff;border:6px solid #ffe46b;border-radius:34px;box-shadow:0 14px 35px #0007;align-items:center;justify-content:center}
+#moveCue svg{width:155px;height:155px;overflow:visible}
+#cueBody{transform-origin:80px 85px;transition:transform .2s}.cueLArm,.cueRArm,.cueLLeg,.cueRLeg{transform-box:fill-box;transform-origin:top center;transition:transform .2s}.cuePulse{animation:cuePulse .65s infinite alternate}@keyframes cuePulse{to{transform:translateX(-50%) scale(1.07)}}
+.overlay{position:absolute;z-index:100;inset:0;background:linear-gradient(#133456ee,#07182bf7);display:flex;align-items:center;justify-content:center;padding:20px}.panel{width:min(700px,94vw);background:#fff;color:#1d3048;border-radius:34px;padding:30px;text-align:center;box-shadow:0 25px 70px #0008}.panel h1{font-size:43px;margin:0 0 8px}.panel p{color:#657488;line-height:1.7}
+button,input,select{font:inherit;border:0;border-radius:14px;padding:12px}.start{width:100%;font-size:23px;font-weight:900;background:#ff6598;color:#fff;cursor:pointer}.gear{position:absolute;z-index:80;left:16px;top:16px;width:45px;height:45px;border-radius:50%;font-size:20px}
+#settings{display:none;position:absolute;z-index:90;left:16px;top:68px;width:315px;background:#fffffff4;color:#26384e;border-radius:18px;padding:15px}.row{display:grid;gap:5px;margin:8px 0}
+.progress{height:9px;background:#dfe8f0;border-radius:10px;overflow:hidden;margin:14px 0}.bar{height:100%;width:0;background:#5bd5a2}.flash{animation:flash .45s}@keyframes flash{50%{box-shadow:inset 0 0 80px 20px #ffe86c}}
+@media(max-width:700px){.card{min-width:68%}.cam{width:115px}.avatarWrap{width:220px;height:300px}.hud{top:auto;bottom:10px;right:10px}}
+</style></head><body><div id="sessionHUD" style="position:absolute;top:12px;right:12px;z-index:8;display:flex;gap:8px;flex-wrap:wrap;direction:rtl">
+<div class="chip">👤 <span id="hudStudent">—</span></div>
+<div class="chip">⏱️ <span id="roundClock">01:00</span></div>
+<div class="chip">الطالب <span id="studentNumber">1</span>/<span id="targetNumber">10</span></div>
+</div><div id="game">
+<div class="cloud c1"></div><div class="cloud c2"></div><div class="city"></div><div class="road"></div><div class="line l1"></div><div class="line l2"></div>
+<div class="card"><div id="word">مغامرة القراءة</div><div id="instruction" class="sub">اقرأ • تحرك • اجمع النجوم</div></div><div id="message"></div>
+<div id="moveCue" aria-label="إشارة الحركة"><svg viewBox="0 0 160 160">
+<g id="cueBody"><circle cx="80" cy="31" r="19" fill="#f4b78f" stroke="#24364b" stroke-width="4"/><line x1="80" y1="52" x2="80" y2="103" stroke="#18a6b9" stroke-width="18" stroke-linecap="round"/>
+<line id="cueLArm" class="cueLArm" x1="72" y1="61" x2="39" y2="91" stroke="#f4b78f" stroke-width="12" stroke-linecap="round"/>
+<line id="cueRArm" class="cueRArm" x1="88" y1="61" x2="121" y2="91" stroke="#f4b78f" stroke-width="12" stroke-linecap="round"/>
+<line id="cueLLeg" class="cueLLeg" x1="74" y1="99" x2="55" y2="143" stroke="#294b91" stroke-width="13" stroke-linecap="round"/>
+<line id="cueRLeg" class="cueRLeg" x1="86" y1="99" x2="105" y2="143" stroke="#294b91" stroke-width="13" stroke-linecap="round"/></g></svg></div>
+<div class="hud"><div class="chip">🎤 <span id="micState">انتظار</span></div><div class="chip">⭐ <span id="score">0</span></div><div class="chip">📚 <span id="count">0/0</span></div></div>
+<div class="avatarWrap" id="aw"><svg id="avatar" viewBox="0 0 260 350"><ellipse cx="130" cy="336" rx="55" ry="11" fill="#000" opacity=".18"/>
+<line id="torso" x1="130" y1="108" x2="130" y2="215" stroke="#18a6b9" stroke-width="42" stroke-linecap="round"/>
+<line id="uaL" x1="110" y1="115" x2="82" y2="165" stroke="#f4b78f" stroke-width="20" stroke-linecap="round"/><line id="faL" x1="82" y1="165" x2="68" y2="215" stroke="#f4b78f" stroke-width="17" stroke-linecap="round"/>
+<line id="uaR" x1="150" y1="115" x2="178" y2="165" stroke="#f4b78f" stroke-width="20" stroke-linecap="round"/><line id="faR" x1="178" y1="165" x2="192" y2="215" stroke="#f4b78f" stroke-width="17" stroke-linecap="round"/>
+<line id="thL" x1="114" y1="210" x2="101" y2="270" stroke="#294b91" stroke-width="24" stroke-linecap="round"/><line id="shL" x1="101" y1="270" x2="92" y2="326" stroke="#294b91" stroke-width="20" stroke-linecap="round"/>
+<line id="thR" x1="146" y1="210" x2="159" y2="270" stroke="#294b91" stroke-width="24" stroke-linecap="round"/><line id="shR" x1="159" y1="270" x2="168" y2="326" stroke="#294b91" stroke-width="20" stroke-linecap="round"/>
+<g id="face"><circle cx="130" cy="62" r="38" fill="#f4b78f"/><path d="M94 58 Q130 7 166 58 Q155 20 130 20 Q105 20 94 58" fill="#433026"/><circle cx="117" cy="62" r="4"/><circle cx="143" cy="62" r="4"/><path d="M116 79 Q130 91 144 79" fill="none" stroke="#a84f50" stroke-width="4"/></g></svg></div>
+<div class="cam"><video id="video" autoplay playsinline muted></video><canvas id="overlay"></canvas><div id="vu" style="position:absolute;z-index:5;bottom:4px;left:5px;right:5px;height:7px;background:#ffffff55;border-radius:8px;overflow:hidden"><div id="vuBar" style="height:100%;width:0;background:#fff"></div></div></div>
+<button class="gear" id="gear">⚙️</button><div id="settings"><b>إعدادات المعلمة</b>
+<div class="row">المستوى<select id="level"><option value="1">1 — حروف</option><option value="2">2 — كلمات بسيطة</option><option value="3">3 — كلمة + حركة</option><option value="4">4 — كلمتان / تعليمات قصيرة</option><option value="5">5 — تحدي القراءة والحركة</option></select></div>
+<div class="row">اسم الطالب<input id="student" placeholder="اختياري"></div><div class="row">الموسيقى<select id="music"><option value="on">تشغيل</option><option value="off">إيقاف</option></select></div><button id="recal">إعادة المعايرة</button></div>
+<div id="startOverlay" class="overlay"><div class="panel"><h1>🚆 مغامرة القراءة</h1><p>خمسة مستويات متدرجة. الشخصية تقلد جسم الطالب والمسار يظل متحركًا طوال اللعب.</p><div class="progress"><div id="calBar" class="bar"></div></div><div id="boot">اختاري المستوى من ⚙️ ثم اضغطي ابدأ.</div><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(620px,92vw);margin:12px auto;text-align:right">
+<label>اسم الطالب<input id="studentName" autocomplete="off" placeholder="اكتب اسم الطالب" style="width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;font-size:16px"></label>
+<label>الصف<select id="studentClass" style="width:100%;padding:10px;border-radius:12px;font-size:16px"><option value="">اختر الصف</option><option>الأول</option><option>الثاني</option><option>الثالث</option><option>الرابع</option><option>الخامس</option></select></label>
+<label>مدة الجولة
 <select id="roundMinutes" style="width:100%;padding:10px;border-radius:12px;font-size:16px">
-<option value="0.5">30 ثانية</option>
-<option value="0.75">45 ثانية</option>
-<option value="1" selected>دقيقة</option>
-<option value="1.5">دقيقة ونصف</option>
-<option value="2">دقيقتان</option>
-<option value="3">3 دقائق</option>
-</select>
-</label>
-
-<label>
-عدد الطلاب المستهدف
-<input id="targetStudents" type="number" min="1" max="100" value="10"
-style="width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;font-size:16px">
-</label>
-
-</div>
-
-<div id="formMsg" style="min-height:22px;color:#b42318;font-weight:800"></div>
-
-<button id="start" class="start">ابدأ المغامرة ▶</button>
-
-</div>
-</div>
-
-<div id="timeOverlay"
-style="display:none;position:absolute;inset:0;z-index:40;background:rgba(15,23,42,.93);align-items:center;justify-content:center;text-align:center;color:white">
-
-<div>
-  <div style="font-size:70px">⏰</div>
-  <h1 style="font-size:42px;margin:8px">انتهى الوقت!</h1>
-  <div id="timeStudent" style="font-size:25px;font-weight:900"></div>
-  <div id="timeResult" style="font-size:20px;margin:12px"></div>
-
-  <button id="nextStudent"
-  style="font-size:22px;padding:14px 28px;border:0;border-radius:18px;font-weight:900;cursor:pointer">
-  الطالب التالي 👈
-  </button>
-
-  <button id="showStats"
-  style="font-size:18px;padding:12px 20px;margin:8px;border:0;border-radius:16px;font-weight:800;cursor:pointer">
-  📊 سجل التفعيل
-  </button>
-</div>
-</div>
-
-<div id="statsOverlay"
-style="display:none;position:absolute;inset:0;z-index:45;background:rgba(255,255,255,.98);overflow:auto;padding:22px;direction:rtl;color:#111">
-
-<button id="closeStats"
-style="float:left;padding:10px 16px;border:0;border-radius:12px;font-weight:800">
-إغلاق ✕
-</button>
-
-<h2>📊 سجل تفعيل اللعبة</h2>
-<div id="statsSummary"></div>
-<div id="statsTable"></div>
-</div>
-
-<div id="endOverlay" class="overlay" style="display:none">
-<div class="panel">
-  <h1>🏆 بطل القراءة!</h1>
-  <div id="final" style="font-size:25px;line-height:2"></div>
-  <button onclick="location.reload()" class="start">جولة جديدة</button>
-</div>
-</div>
-
-</div>
-
-<audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio>
-
-<div id="speechDiag">
-  <b>تشخيص الصوت — V13.6</b>
-  <div>🎤 وصول الصوت: <strong id="diagAudio">بانتظار الصوت</strong></div>
-  <div>👂 محرك الاستماع: <strong id="diagRec">غير معروف</strong></div>
-  <div>🌐 لغة المحرك: <strong id="diagLang">ar-BH</strong></div>
-  <div>📝 Edge سمع: <strong id="diagText">—</strong></div>
-  <div>⚠️ آخر خطأ: <strong id="diagError">—</strong></div>
-</div>
-
-<script>
-
-const $=id=>document.getElementById(id);
-
-const norm=s=>(s||"")
-.replace(/[\u064B-\u065F\u0670]/g,"")
-.replace(/[إأآ]/g,"ا")
-.replace(/ى/g,"ي")
-.replace(/[^\u0600-\u06FF ]/g,"")
-.replace(/\s+/g," ")
-.trim();
-
-let roundTimer=null;
-let roundEndsAt=0;
-let roundSeconds=60;
-let sessionEnded=false;
-
-let studentStart=0;
-let studentCorrect=0;
-let studentMoves=0;
-let studentAttempts=0;
-
-let activationLog=[];
-let setupDone=false;
-
-let promptVoiceSeen=false;
-let promptVoicePeak=0;
-
-let items=[];
-let i=0;
-let score=0;
-
-let pose=null;
-let stream=null;
-let cal=false;
-let samples=[];
-let processing=false;
-let prev=null;
-let still=0;
-let lastAct=0;
-
-let readOK=false;
-let moveOK=false;
-
-let rec=null;
-let recRunning=false;
-let speechLang="ar-BH";
-let speechFallbackUsed=false;
-let speechResultSeen=false;
-let speechFallbackTimer=null;
-
-let spawnTimer=null;
-let level=1;
-let promptToken=0;
-let nextTimer=null;
-
-let musicCtx=null;
-let audioCtx=null;
-let audioAnalyser=null;
-let micWatch=null;
-let restartTimer=null;
-
-let advanceUnlocked=false;
-let advanceReason="";
-let prevHandDist=null;
-
-let base={x:.5,hip:.62,sh:.35,span:.2};
-let T={side:.05,jump:.04,duck:.05,clap:.1};
-
-const L1=[
-["ب",["ب","باء"],"بَاب"],
-["ت",["ت","تاء"],"تُفَّاح"],
-["ث",["ث","ثاء"],"ثَعْلَب"],
-["ج",["ج","جيم"],"جَمَل"],
-["ح",["ح","حاء"],"حَلِيب"],
-["خ",["خ","خاء"],"خُبْز"],
-["د",["د","دال"],"دُب"],
-["ذ",["ذ","ذال"],"ذُرَة"],
-["ر",["ر","راء"],"رُمَّان"],
-["ز",["ز","زاي","زين"],"زَهْرَة"],
-["س",["س","سين"],"سَمَك"],
-["ش",["ش","شين"],"شَمْس"],
-["ص",["ص","صاد"],"صَقْر"],
-["ض",["ض","ضاد"],"ضِفْدَع"],
-["ط",["ط","طاء"],"طَائِر"],
-["ظ",["ظ","ظاء"],"ظَرْف"],
-["ع",["ع","عين"],"عِنَب"],
-["غ",["غ","غين"],"غَيْم"],
-["ف",["ف","فاء"],"فِيل"],
-["ق",["ق","قاف"],"قَلَم"],
-["ك",["ك","كاف"],"كِتَاب"],
-["ل",["ل","لام"],"لَيْمُون"],
-["م",["م","ميم"],"مَوْز"],
-["ن",["ن","نون"],"نَجْم"],
-["ه",["ه","هاء"],"هِلَال"],
-["و",["و","واو"],"وَرْد"],
-["ي",["ي","ياء"],"يَد"]
-];
-
-const L2=[
-["بَاب",["باب"]],
-["قَلَم",["قلم"]],
-["مَوْز",["موز"]],
-["سَمَك",["سمك"]],
-["كِتَاب",["كتاب"]],
-["وَرْد",["ورد"]],
-["بَيْت",["بيت"]],
-["يَد",["يد"]],
-["عَيْن",["عين"]],
-["شَمْس",["شمس"]],
-["قَمَر",["قمر"]],
-["مَاء",["ماء"]],
-["حَلِيب",["حليب"]],
-["خُبْز",["خبز"]],
-["تُفَّاح",["تفاح"]],
-["عِنَب",["عنب"]],
-["فِيل",["فيل"]],
-["جَمَل",["جمل"]],
-["نَجْم",["نجم"]],
-["كُرَة",["كرة"]],
-["وَلَد",["ولد"]],
-["بِنْت",["بنت"]],
-["مَدْرَسَة",["مدرسة"]],
-["قِصَّة",["قصة"]],
-["بَحْر",["بحر"]],
-["نُور",["نور"]],
-["نَار",["نار"]],
-["لَوْن",["لون"]],
-["طَائِر",["طائر","طير"]],
-["لَيْمُون",["ليمون"]]
-];
-
-const L3=[
-["يَمِين",["يمين"],"right"],
-["يَسَار",["يسار"],"left"],
-["يَقْفِز",["يقفز","اقفز"],"jump"],
-["يَجْلِس",["يجلس","اجلس"],"duck"],
-["يُصَفِّق",["يصفق","صفق"],"clap"],
-["يَقِف",["يقف","قف"],"stop"],
-["إِلَى اليَمِين",["الى اليمين"],"right"],
-["إِلَى اليَسَار",["الى اليسار"],"left"],
-["اقْفِز",["اقفز"],"jump"],
-["اجْلِس",["اجلس"],"duck"],
-["صَفِّق",["صفق"],"clap"],
-["قِف",["قف"],"stop"],
-["تَحَرَّكْ يَمِينًا",["تحرك يمينا"],"right"],
-["تَحَرَّكْ يَسَارًا",["تحرك يسارا"],"left"],
-["قَفْزَة",["قفزة"],"jump"],
-["جُلُوس",["جلوس"],"duck"],
-["تَصْفِيق",["تصفيق"],"clap"],
-["ثَبَات",["ثبات"],"stop"]
-];
-
-const L4=[
-["اذْهَبْ يَمِينًا",["اذهب يمينا"],"right"],
-["اذْهَبْ يَسَارًا",["اذهب يسارا"],"left"],
-["اقْفِزْ الآن",["اقفز الان"],"jump"],
-["صَفِّقْ الآن",["صفق الان"],"clap"],
-["اجْلِسْ قَلِيلًا",["اجلس قليلا"],"duck"],
-["قِفْ مَكَانَكَ",["قف مكانك"],"stop"],
-["تَحَرَّكْ إِلَى اليَمِين",["تحرك الى اليمين"],"right"],
-["تَحَرَّكْ إِلَى اليَسَار",["تحرك الى اليسار"],"left"],
-["اقْفِزْ عَالِيًا",["اقفز عاليا"],"jump"],
-["صَفِّقْ بِيَدَيْكَ",["صفق بيديك"],"clap"],
-["اجْلِسْ الآن",["اجلس الان"],"duck"],
-["اثْبُتْ مَكَانَكَ",["اثبت مكانك"],"stop"],
-["خُطْوَة إِلَى اليَمِين",["خطوة الى اليمين"],"right"],
-["خُطْوَة إِلَى اليَسَار",["خطوة الى اليسار"],"left"],
-["اقْرَأْ ثُمَّ اقْفِزْ",["اقرا ثم اقفز"],"jump"],
-["اقْرَأْ ثُمَّ صَفِّقْ",["اقرا ثم صفق"],"clap"],
-["اجْلِسْ ثُمَّ قِفْ",["اجلس ثم قف"],"stop"],
-["قِفْ دُونَ حَرَكَة",["قف دون حركة"],"stop"]
-];
-
-const L5=[
-["اقْرَأْ ثُمَّ اقْفِزْ عَالِيًا",["اقرا ثم اقفز عاليا"],"jump"],
-["تَحَرَّكْ بِسُرْعَة إِلَى اليَمِين",["تحرك بسرعة الى اليمين"],"right"],
-["تَحَرَّكْ بِسُرْعَة إِلَى اليَسَار",["تحرك بسرعة الى اليسار"],"left"],
-["اقْرَأْ العِبَارَة ثُمَّ صَفِّقْ",["اقرا العبارة ثم صفق"],"clap"],
-["اجْلِسْ قَلِيلًا ثُمَّ قِفْ",["اجلس قليلا ثم قف"],"stop"],
-["قِفْ فِي مَكَانِكَ دُونَ حَرَكَة",["قف في مكانك دون حركة"],"stop"],
-["بَعْدَ القِرَاءَة تَحَرَّكْ يَمِينًا",["بعد القراءة تحرك يمينا"],"right"],
-["بَعْدَ القِرَاءَة تَحَرَّكْ يَسَارًا",["بعد القراءة تحرك يسارا"],"left"],
-["اقْرَأْ جَيِّدًا ثُمَّ اقْفِزْ",["اقرا جيدا ثم اقفز"],"jump"],
-["اقْرَأْ ثُمَّ صَفِّقْ بِيَدَيْكَ",["اقرا ثم صفق بيديك"],"clap"],
-["اقْرَأْ ثُمَّ اجْلِسْ قَلِيلًا",["اقرا ثم اجلس قليلا"],"duck"],
-["اقْرَأْ وَاثْبُتْ فِي مَكَانِكَ",["اقرا واثبت في مكانك"],"stop"],
-["تَحَرَّكْ خُطْوَة إِلَى اليَمِين",["تحرك خطوة الى اليمين"],"right"],
-["تَحَرَّكْ خُطْوَة إِلَى اليَسَار",["تحرك خطوة الى اليسار"],"left"],
-["اقْرَأْ بِصَوْتٍ وَاضِح ثُمَّ اقْفِزْ",["اقرا بصوت واضح ثم اقفز"],"jump"],
-["اقْرَأْ بِصَوْتٍ وَاضِح ثُمَّ صَفِّقْ",["اقرا بصوت واضح ثم صفق"],"clap"],
-["اجْلِسْ بَعْدَ أَنْ تَقْرَأ",["اجلس بعد ان تقرا"],"duck"],
-["اقْرَأْ ثُمَّ قِفْ ثَابِتًا",["اقرا ثم قف ثابتا"],"stop"]
-];
-
-const LEVELS={1:L1,2:L2,3:L3,4:L4,5:L5};
-
-const cur=()=>items[i];
-
-function shuffle(a){
-  a=[...a];
-  for(let x=a.length-1;x>0;x--){
-    const y=Math.floor(Math.random()*(x+1));
-    [a[x],a[y]]=[a[y],a[x]];
-  }
-  return a;
-}
-
-function prepareItems(){
-  items=shuffle(LEVELS[level]);
-  i=0;
-}
-
-function fmtTime(s){
-  s=Math.max(0,Math.ceil(s));
-  return String(Math.floor(s/60)).padStart(2,"0")+":"+
-         String(s%60).padStart(2,"0");
-}
+<option value="0.5">30 ثانية</option><option value="0.75">45 ثانية</option><option value="1" selected>دقيقة</option><option value="1.5">دقيقة ونصف</option><option value="2">دقيقتان</option><option value="3">3 دقائق</option>
+</select></label>
+<label>عدد الطلاب المستهدف<input id="targetStudents" type="number" min="1" max="100" value="10" style="width:100%;padding:10px;border-radius:12px;border:1px solid #ccc;font-size:16px"></label>
+</div><div id="formMsg" style="min-height:22px;color:#b42318;font-weight:800"></div><button id="start" class="start">ابدأ المغامرة ▶</button></div></div>
+<div id="timeOverlay" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(15,23,42,.93);align-items:center;justify-content:center;text-align:center;color:white">
+<div><div style="font-size:70px">⏰</div><h1 style="font-size:42px;margin:8px">انتهى الوقت!</h1>
+<div id="timeStudent" style="font-size:25px;font-weight:900"></div>
+<div id="timeResult" style="font-size:20px;margin:12px"></div>
+<button id="nextStudent" style="font-size:22px;padding:14px 28px;border:0;border-radius:18px;font-weight:900;cursor:pointer">الطالب التالي 👈</button>
+<button id="showStats" style="font-size:18px;padding:12px 20px;margin:8px;border:0;border-radius:16px;font-weight:800;cursor:pointer">📊 سجل التفعيل</button>
+</div></div>
+<div id="statsOverlay" style="display:none;position:absolute;inset:0;z-index:45;background:rgba(255,255,255,.98);overflow:auto;padding:22px;direction:rtl;color:#111">
+<button id="closeStats" style="float:left;padding:10px 16px;border:0;border-radius:12px;font-weight:800">إغلاق ✕</button>
+<h2>📊 سجل تفعيل اللعبة</h2><div id="statsSummary"></div><div id="statsTable"></div>
+</div><div id="endOverlay" class="overlay" style="display:none"><div class="panel"><h1>🏆 بطل القراءة!</h1><div id="final" style="font-size:25px;line-height:2"></div><button onclick="location.reload()" class="start">جولة جديدة</button></div></div>
+</div><script>
+let roundTimer=null,roundEndsAt=0,roundSeconds=60,sessionEnded=false;
+let studentStart=0,studentCorrect=0,studentMoves=0,studentAttempts=0;
+let activationLog=[];let setupDone=false;
 
 function watchPromptVoice(){
-  if(!audioAnalyser || sessionEnded){
-    requestAnimationFrame(watchPromptVoice);
-    return;
-  }
-
+  if(!audioAnalyser || sessionEnded){ requestAnimationFrame(watchPromptVoice); return; }
   try{
     const a=new Uint8Array(audioAnalyser.fftSize||512);
     audioAnalyser.getByteTimeDomainData(a);
-
     let sum=0;
-
-    for(let j=0;j<a.length;j++){
-      const d=(a[j]-128)/128;
-      sum+=d*d;
-    }
-
+    for(let i=0;i<a.length;i++){ const d=(a[i]-128)/128; sum+=d*d; }
     const rms=Math.sqrt(sum/a.length);
     promptVoicePeak=Math.max(promptVoicePeak,rms);
-
-    if(rms>0.018){
-      promptVoiceSeen=true;
-    }
-
+    if(rms>0.018) promptVoiceSeen=true;
   }catch(e){}
-
   requestAnimationFrame(watchPromptVoice);
 }
-
 requestAnimationFrame(watchPromptVoice);
 
+function shuffle(a){a=[...a];for(let x=a.length-1;x>0;x--){let y=Math.floor(Math.random()*(x+1));[a[x],a[y]]=[a[y],a[x]]}return a}
+function prepareItems(){items=shuffle(LEVELS[level]);i=0}
+function fmtTime(s){s=Math.max(0,Math.ceil(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 function beginStudentTimer(){
-  clearInterval(roundTimer);
-
-  sessionEnded=false;
-  studentStart=Date.now();
-  studentCorrect=0;
-  studentMoves=0;
-  studentAttempts=0;
-
-  roundSeconds=Math.max(
-    10,
-    Math.round(parseFloat($("roundMinutes").value||1)*60)
-  );
-
-  roundEndsAt=Date.now()+roundSeconds*1000;
-
-  $("roundClock").textContent=fmtTime(roundSeconds);
-  $("hudStudent").textContent=$("studentName").value.trim();
-  $("targetNumber").textContent=$("targetStudents").value;
-  $("studentNumber").textContent=activationLog.length+1;
-
-  roundTimer=setInterval(()=>{
-    const left=(roundEndsAt-Date.now())/1000;
-    $("roundClock").textContent=fmtTime(left);
-
-    if(left<=0){
-      endStudentRound();
-    }
-  },200);
+ clearInterval(roundTimer);sessionEnded=false;studentStart=Date.now();studentCorrect=0;studentMoves=0;studentAttempts=0;
+ roundSeconds=Math.max(10,Math.round(parseFloat($("roundMinutes").value||1)*60));roundEndsAt=Date.now()+roundSeconds*1000;
+ $("roundClock").textContent=fmtTime(roundSeconds);$("hudStudent").textContent=$("studentName").value.trim();
+ $("targetNumber").textContent=$("targetStudents").value;$("studentNumber").textContent=activationLog.length+1;
+ roundTimer=setInterval(()=>{let left=(roundEndsAt-Date.now())/1000;$("roundClock").textContent=fmtTime(left);
+ if(left<=0)endStudentRound()},200);
 }
-
 function alarm(){
-  const C=musicCtx||audioCtx;
-  if(!C)return;
-
-  try{
-    if(C.state==="suspended")C.resume();
-  }catch(e){}
-
-  const now=C.currentTime;
-
-  for(let k=0;k<9;k++){
-    const o=C.createOscillator();
-    const g=C.createGain();
-
-    o.type=k%2?"square":"sawtooth";
-    o.frequency.value=k%2?1046:784;
-
-    g.gain.setValueAtTime(.001,now+k*.22);
-    g.gain.linearRampToValueAtTime(.72,now+k*.22+.025);
-    g.gain.exponentialRampToValueAtTime(.001,now+k*.22+.18);
-
-    o.connect(g);
-    g.connect(C.destination);
-
-    o.start(now+k*.22);
-    o.stop(now+k*.22+.2);
-  }
+ let C=musicCtx||audioCtx;if(!C)return;
+ try{if(C.state==="suspended")C.resume()}catch(e){}
+ let now=C.currentTime;
+ for(let k=0;k<9;k++){let o=C.createOscillator(),g=C.createGain();o.type=k%2?"square":"sawtooth";o.frequency.value=k%2?1046:784;
+ g.gain.setValueAtTime(.001,now+k*.22);g.gain.linearRampToValueAtTime(.72,now+k*.22+.025);g.gain.exponentialRampToValueAtTime(.001,now+k*.22+.18);
+ o.connect(g);g.connect(C.destination);o.start(now+k*.22);o.stop(now+k*.22+.2)}
 }
-
 function endStudentRound(){
-  if(sessionEnded)return;
-
-  sessionEnded=true;
-  clearInterval(roundTimer);
-  clearTimeout(nextTimer);
-  clearTimeout(restartTimer);
-  clearTimeout(speechFallbackTimer);
-
-  restartTimer=null;
-  advanceUnlocked=false;
-
-  promptToken++;
-  promptVoiceSeen=false;
-  promptVoicePeak=0;
-
-  if(recRunning && rec){
-    try{rec.abort()}catch(e){}
-    recRunning=false;
-  }
-
-  $("bgMusic").pause();
-  alarm();
-
-  const accuracy=studentAttempts
-    ?Math.round(studentCorrect/studentAttempts*100)
-    :0;
-
-  const record={
-    name:$("studentName").value.trim(),
-    className:$("studentClass").value,
-    level,
-    duration:roundSeconds,
-    correct:studentCorrect,
-    moves:studentMoves,
-    attempts:studentAttempts,
-    accuracy,
-    score,
-    date:new Date().toLocaleString("ar-BH")
-  };
-
-  activationLog.push(record);
-
-  $("timeStudent").textContent=
-    record.name+" — الصف "+record.className;
-
-  $("timeResult").textContent=
-    "أنجز "+record.correct+
-    " قراءة صحيحة • "+
-    record.moves+
-    " حركة صحيحة • "+
-    record.score+
-    " نقطة";
-
-  $("timeOverlay").style.display="flex";
+ if(sessionEnded)return;sessionEnded=true;clearInterval(roundTimer);clearTimeout(nextTimer);clearTimeout(restartTimer);restartTimer=null;
+ advanceUnlocked=false;promptToken++; promptVoiceSeen=false; promptVoicePeak=0;if(recRunning){try{rec.abort()}catch(e){}recRunning=false}
+ $("bgMusic").pause();duckMusic(false);alarm();
+ let totalDone=studentCorrect, accuracy=studentAttempts?Math.round(studentCorrect/studentAttempts*100):0;
+ let rec={name:$("studentName").value.trim(),className:$("studentClass").value,level,duration:roundSeconds,correct:studentCorrect,moves:studentMoves,attempts:studentAttempts,accuracy,score,date:new Date().toLocaleString("ar-BH")};
+ activationLog.push(rec);
+ $("timeStudent").textContent=rec.name+" — الصف "+rec.className;
+ $("timeResult").textContent="أنجز "+totalDone+" قراءة صحيحة • "+studentMoves+" حركة صحيحة • "+score+" نقطة";
+ $("timeOverlay").style.display="flex";
 }
-
 function renderStats(){
-  const n=activationLog.length;
-  const target=Math.max(1,+$("targetStudents").value||1);
-  const rate=Math.min(100,Math.round(n/target*100));
-
-  const avg=n
-    ?Math.round(
-      activationLog.reduce((s,r)=>s+r.accuracy,0)/n
-    )
-    :0;
-
-  $("statsSummary").innerHTML=
-    "<h3>عدد الطلاب المفعّلين: "+n+
-    " من "+target+
-    " — نسبة التفعيل: "+rate+
-    "% — متوسط دقة القراءة: "+avg+
-    "%</h3>";
-
-  const rows=activationLog.map((r,j)=>`
-    <tr>
-      <td>${j+1}</td>
-      <td>${r.name}</td>
-      <td>${r.className}</td>
-      <td>${r.level}</td>
-      <td>${fmtTime(r.duration)}</td>
-      <td>${r.correct}</td>
-      <td>${r.moves}</td>
-      <td>${r.attempts}</td>
-      <td>${r.accuracy}%</td>
-      <td>${r.score}</td>
-    </tr>
-  `).join("");
-
-  $("statsTable").innerHTML=`
-    <table style="width:100%;border-collapse:collapse;text-align:center">
-      <tr>
-        <th>م</th>
-        <th>الاسم</th>
-        <th>الصف</th>
-        <th>المستوى</th>
-        <th>المدة</th>
-        <th>الصحيح</th>
-        <th>الحركات</th>
-        <th>المحاولات</th>
-        <th>الدقة</th>
-        <th>النقاط</th>
-      </tr>
-      ${rows}
-    </table>
-  `;
+ let n=activationLog.length,target=Math.max(1,+$("targetStudents").value||1),rate=Math.min(100,Math.round(n/target*100));
+ let avg=n?Math.round(activationLog.reduce((s,r)=>s+r.accuracy,0)/n):0;
+ $("statsSummary").innerHTML="<h3>عدد الطلاب المفعّلين: "+n+" من "+target+" — نسبة التفعيل: "+rate+"% — متوسط دقة القراءة: "+avg+"%</h3>";
+ $("statsTable").innerHTML="<table style='width:100%;border-collapse:collapse'><tr><th>م</th><th>الاسم</th><th>الصف</th><th>المستوى</th><th>المدة</th><th>الصحيح</th><th>الحركات</th><th>المحاولات</th><th>الدقة</th><th>النقاط</th></tr>"+
+ activationLog.map((r,j)=>"<tr><td>"+(j+1)+"</td><td>"+r.name+"</td><td>"+r.className+"</td><td>"+r.level+"</td><td>"+fmtTime(r.duration)+"</td><td>"+r.correct+"</td><td>"+r.moves+"</td><td>"+r.accuracy+"%</td></tr>").join("")+"</table>";
 }
 
-function duckMusic(on){
-  const a=$("bgMusic");
-  if(a)a.volume=on?.14:.64;
-}
+const L1=[
+["ا",["ا","الف","ألف","اسد"],"أَسَد"],["ب",["ب","باء","باب"],"بَاب"],["ت",["ت","تاء","تفاح"],"تُفَّاح"],["ث",["ث","ثاء","ثعلب"],"ثَعْلَب"],["ج",["ج","جيم","جمل"],"جَمَل"],["ح",["ح","حاء","حليب"],"حَلِيب"],["خ",["خ","خاء","خبز"],"خُبْز"],["د",["د","دال","دب"],"دُب"],["ذ",["ذ","ذال","ذرة"],"ذُرَة"],["ر",["ر","راء","رمان"],"رُمَّان"],["ز",["ز","زاي","زين","زهرة"],"زَهْرَة"],["س",["س","سين","سمك"],"سَمَك"],["ش",["ش","شين","شمس"],"شَمْس"],["ص",["ص","صاد","صقر"],"صَقْر"],["ض",["ض","ضاد","ضفدع"],"ضِفْدَع"],["ط",["ط","طاء","طائر","طير"],"طَائِر"],["ظ",["ظ","ظاء","ظرف"],"ظَرْف"],["ع",["ع","عين","عنب"],"عِنَب"],["غ",["غ","غين","غيم"],"غَيْم"],["ف",["ف","فاء","فيل"],"فِيل"],["ق",["ق","قاف","قلم"],"قَلَم"],["ك",["ك","كاف","كتاب"],"كِتَاب"],["ل",["ل","لام","ليمون"],"لَيْمُون"],["م",["م","ميم","موز"],"مَوْز"],["ن",["ن","نون","نجم"],"نَجْم"],["ه",["ه","هاء","هلال"],"هِلَال"],["و",["و","واو","ورد"],"وَرْد"],["ي",["ي","ياء","يد"],"يَد"]];
+const L2=[["بَاب",["باب"]],["قَلَم",["قلم"]],["مَوْز",["موز"]],["سَمَك",["سمك"]],["كِتَاب",["كتاب"]],["وَرْد",["ورد"]],["بَيْت",["بيت"]],["يَد",["يد"]],["عَيْن",["عين"]],["شَمْس",["شمس"]],["قَمَر",["قمر"]],["مَاء",["ماء"]],["حَلِيب",["حليب"]],["خُبْز",["خبز"]],["تُفَّاح",["تفاح"]],["عِنَب",["عنب"]],["فِيل",["فيل"]],["جَمَل",["جمل"]],["نَجْم",["نجم"]],["كُرَة",["كرة"]],["وَلَد",["ولد"]],["بِنْت",["بنت"]],["مَدْرَسَة",["مدرسة"]],["قِصَّة",["قصة"]],["بَحْر",["بحر"]],["نُور",["نور"]],["نَار",["نار"]],["لَوْن",["لون"]],["طَائِر",["طائر","طير"]],["لَيْمُون",["ليمون"]]];
+const L3=[["قَمَر",["قمر"],"bothUp"],["شَمْس",["شمس"],"rightUp"],["بَحْر",["بحر"],"leftUp"],["كِتَاب",["كتاب"],"armsOpen"],["نَجْم",["نجم"],"leanRight"],["وَرْد",["ورد"],"leanLeft"],["جَمَل",["جمل"],"knee"],["مَوْز",["موز"],"squat"],["فِيل",["فيل"],"jump"],["قَلَم",["قلم"],"bothUp"],["بَيْت",["بيت"],"armsOpen"],["سَمَك",["سمك"],"rightUp"],["عِنَب",["عنب"],"leftUp"],["طَائِر",["طائر","طير"],"leanRight"],["لَيْمُون",["ليمون"],"leanLeft"],["هِلَال",["هلال"],"knee"],["أَسَد",["اسد"],"squat"],["كُرَة",["كرة"],"jump"]];
+const L4=[["قَمَرٌ جَمِيل",["قمر جميل"],"bothUp"],["شَمْسٌ سَاطِعَة",["شمس ساطعة"],"rightUp"],["بَحْرٌ أَزْرَق",["بحر ازرق"],"leftUp"],["كِتَابٌ مُفِيد",["كتاب مفيد"],"armsOpen"],["نَجْمٌ لَامِع",["نجم لامع"],"leanRight"],["وَرْدٌ جَمِيل",["ورد جميل"],"leanLeft"],["جَمَلٌ كَبِير",["جمل كبير"],"knee"],["مَوْزٌ أَصْفَر",["موز اصفر"],"squat"],["طَائِرٌ صَغِير",["طائر صغير","طير صغير"],"jump"],["قَلَمٌ جَدِيد",["قلم جديد"],"bothUp"],["بَيْتٌ كَبِير",["بيت كبير"],"armsOpen"],["سَمَكٌ صَغِير",["سمك صغير"],"rightUp"],["عِنَبٌ لَذِيذ",["عنب لذيذ"],"leftUp"],["فِيلٌ ضَخْم",["فيل ضخم"],"leanRight"],["لَيْمُونٌ أَصْفَر",["ليمون اصفر"],"leanLeft"],["هِلَالٌ جَمِيل",["هلال جميل"],"knee"],["أَسَدٌ قَوِي",["اسد قوي"],"squat"],["كُرَةٌ حَمْرَاء",["كرة حمراء"],"jump"]];
+const L5=[["أَنَا أُحِبُّ القِرَاءَة",["انا احب القراءة"],"bothUp"],["الشَّمْسُ تُضِيءُ السَّمَاء",["الشمس تضيء السماء"],"rightUp"],["القَمَرُ يَظْهَرُ لَيْلًا",["القمر يظهر ليلا"],"leftUp"],["أَقْرَأُ كِتَابًا مُفِيدًا",["اقرا كتابا مفيدا"],"armsOpen"],["أَرَى نَجْمًا لَامِعًا",["ارى نجما لامعا"],"leanRight"],["فِي الحَدِيقَةِ وَرْدٌ جَمِيل",["في الحديقة ورد جميل"],"leanLeft"],["الجَمَلُ يَمْشِي فِي الصَّحْرَاء",["الجمل يمشي في الصحراء"],"knee"],["المَوْزُ فَاكِهَةٌ لَذِيذَة",["الموز فاكهة لذيذة"],"squat"],["الطَّائِرُ يُحَلِّقُ فِي السَّمَاء",["الطائر يحلق في السماء","الطير يحلق في السماء"],"jump"],["أَكْتُبُ بِقَلَمِي كُلَّ يَوْم",["اكتب بقلمي كل يوم"],"bothUp"],["بَيْتِي قَرِيبٌ مِنَ المَدْرَسَة",["بيتي قريب من المدرسة"],"armsOpen"],["السَّمَكُ يَسْبَحُ فِي المَاءِ",["السمك يسبح في الماء"],"rightUp"],["العِنَبُ فَاكِهَةٌ حُلْوَة",["العنب فاكهة حلوة"],"leftUp"],["الفِيلُ حَيَوَانٌ كَبِير",["الفيل حيوان كبير"],"leanRight"],["اللَّيْمُونُ لَوْنُهُ أَصْفَر",["الليمون لونه اصفر"],"leanLeft"],["الهِلَالُ يَظْهَرُ فِي السَّمَاء",["الهلال يظهر في السماء"],"knee"],["الأَسَدُ حَيَوَانٌ قَوِي",["الاسد حيوان قوي"],"squat"],["أَلْعَبُ بِالكُرَةِ مَعَ أَصْدِقَائِي",["العب بالكرة مع اصدقائي"],"jump"]];
+const LEVELS={1:L1,2:L2,3:L3,4:L4,5:L5};
+const $=x=>document.getElementById(x),norm=s=>(s||"").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[إأآ]/g,"ا").replace(/ى/g,"ي").replace(/[^\u0600-\u06FF ]/g,"").replace(/\s+/g," ").trim();
+let items=[],i=0,score=0,pose,stream,cal=false,samples=[],processing=false,prev=null,still=0,lastAct=0,readOK=false,moveOK=false,rec=null,recRunning=false,spawnTimer=null,level=1,promptToken=0,nextTimer=null,musicCtx=null,musicGain=null,musicTimer=null,audioCtx=null,audioAnalyser=null,micWatch=null,restartTimer=null,advanceUnlocked=false,advanceReason="",prevHandDist=null;
+let speechLangs=["ar-BH","ar-SA"],speechLangIndex=0,recognitionHadResult=false,recognitionWatchdog=null,speechFallbackStartedAt=0;
+let base={x:.5,hip:.62,sh:.35,span:.2},T={side:.05,jump:.04,duck:.05,clap:.1};const cur=()=>items[i];
+let actionHold="",actionFrames=0;
 
+function duckMusic(on){let a=$("bgMusic");if(a)a.volume=on?.14:.64}
 function startMusic(){
-  const a=$("bgMusic");
-  if(!a)return;
-
-  a.volume=.64;
-  a.currentTime=0;
-  a.play().catch(()=>{});
+ let a=$("bgMusic");if(!a)return;
+ a.volume=.64;a.currentTime=0;a.play().catch(()=>{});
 }
-
-function stopMusic(){
-  const a=$("bgMusic");
-  if(a)a.pause();
-}
-
+function stopMusic(){let a=$("bgMusic");if(a)a.pause()}
 function applause(){
-  const A=window.AudioContext||window.webkitAudioContext;
-  if(!A)return;
-
-  const c=musicCtx||(musicCtx=new A());
-
-  if(c.state==="suspended"){
-    c.resume();
-  }
-
-  const now=c.currentTime;
-
-  for(let n=0;n<12;n++){
-    const len=Math.floor(c.sampleRate*.075);
-    const buf=c.createBuffer(1,len,c.sampleRate);
-    const d=buf.getChannelData(0);
-
-    for(let j=0;j<len;j++){
-      d[j]=(Math.random()*2-1)*Math.pow(1-j/len,1.5);
-    }
-
-    const s=c.createBufferSource();
-    const f=c.createBiquadFilter();
-    const g=c.createGain();
-
-    f.type="bandpass";
-    f.frequency.value=1000+Math.random()*1800;
-    g.gain.value=.22;
-
-    s.buffer=buf;
-    s.connect(f).connect(g).connect(c.destination);
-    s.start(now+n*.045);
-  }
-
-  [659.25,783.99,1046.5].forEach((hz,k)=>{
-    const o=c.createOscillator();
-    const g=c.createGain();
-
-    o.type="sine";
-    o.frequency.value=hz;
-
-    g.gain.setValueAtTime(.14,now+.15+k*.09);
-    g.gain.exponentialRampToValueAtTime(.001,now+.35+k*.09);
-
-    o.connect(g).connect(c.destination);
-    o.start(now+.15+k*.09);
-    o.stop(now+.38+k*.09);
-  });
+ let A=window.AudioContext||window.webkitAudioContext;if(!A)return;let c=musicCtx||(musicCtx=new A());if(c.state==="suspended")c.resume();let now=c.currentTime;
+ for(let n=0;n<12;n++){let len=Math.floor(c.sampleRate*.075),buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);for(let j=0;j<len;j++)d[j]=(Math.random()*2-1)*Math.pow(1-j/len,1.5);let s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type="bandpass";f.frequency.value=1000+Math.random()*1800;g.gain.value=.22;s.buffer=buf;s.connect(f).connect(g).connect(c.destination);s.start(now+n*.045)}
+ [659.25,783.99,1046.5].forEach((hz,k)=>{let o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=hz;g.gain.setValueAtTime(.14,now+.15+k*.09);g.gain.exponentialRampToValueAtTime(.001,now+.35+k*.09);o.connect(g).connect(c.destination);o.start(now+.15+k*.09);o.stop(now+.38+k*.09)})
 }
-
-function line(id,a,b){
-  const e=$(id);
-  e.setAttribute("x1",a.x);
-  e.setAttribute("y1",a.y);
-  e.setAttribute("x2",b.x);
-  e.setAttribute("y2",b.y);
-}
-
-function avatar(p){
-  const ks=[11,12,13,14,15,16,23,24,25,26,27,28];
-
-  if(ks.some(k=>!p[k]))return;
-
-  const xs=ks.map(k=>p[k].x);
-  const ys=ks.map(k=>p[k].y);
-
-  const mnx=Math.min(...xs);
-  const mxx=Math.max(...xs);
-  const mny=Math.min(...ys);
-  const mxy=Math.max(...ys);
-
-  const w=Math.max(.25,mxx-mnx);
-  const h=Math.max(.45,mxy-mny);
-  const cx=(mnx+mxx)/2;
-
-  const M=k=>({
-    x:130+((1-p[k].x)-(1-cx))/w*165,
-    y:105+(p[k].y-mny)/h*220
-  });
-
-  const ls=M(11),rs=M(12);
-  const le=M(13),re=M(14);
-  const lw=M(15),rw=M(16);
-  const lh=M(23),rh=M(24);
-  const lk=M(25),rk=M(26);
-  const la=M(27),ra=M(28);
-
-  const sh={
-    x:(ls.x+rs.x)/2,
-    y:(ls.y+rs.y)/2
-  };
-
-  const hp={
-    x:(lh.x+rh.x)/2,
-    y:(lh.y+rh.y)/2
-  };
-
-  line("torso",sh,hp);
-  line("uaL",ls,le);
-  line("faL",le,lw);
-  line("uaR",rs,re);
-  line("faR",re,rw);
-  line("thL",lh,lk);
-  line("shL",lk,la);
-  line("thR",rh,rk);
-  line("shR",rk,ra);
-
-  $("face").setAttribute(
-    "transform",
-    "translate("+
-    (sh.x-130)+" "+
-    (Math.max(38,sh.y-52)-62)+
-    ")"
-  );
-}
-
-function measure(p){
-  const ls=p[11];
-  const rs=p[12];
-  const lh=p[23];
-  const rh=p[24];
-
-  return{
-    x:(ls.x+rs.x+lh.x+rh.x)/4,
-    hip:(lh.y+rh.y)/2,
-    sh:(ls.y+rs.y)/2,
-    span:Math.abs(ls.x-rs.x),
-    lw:p[15],
-    rw:p[16]
-  };
-}
-
-function calibrate(m){
-  samples.push(m);
-
-  const pc=Math.min(
-    100,
-    Math.round(samples.length/28*100)
-  );
-
-  $("calBar").style.width=pc+"%";
-  $("boot").textContent="المعايرة السريعة… "+pc+"%";
-
-  if(samples.length>=28){
-
-    ["x","hip","sh","span"].forEach(k=>{
-      base[k]=samples.reduce((s,q)=>s+q[k],0)/samples.length;
-    });
-
-    T.side=Math.max(.038,base.span*.21);
-    T.jump=Math.max(.03,base.span*.15);
-    T.duck=Math.max(.04,base.span*.20);
-    T.clap=Math.max(.075,base.span*.43);
-
-    cal=true;
-    $("boot").textContent="جاهز ✓";
-
-    setTimeout(()=>{
-      $("startOverlay").style.display="none";
-      round();
-      beginStudentTimer();
-    },300);
-  }
-}
-
+function line(id,a,b){let e=$(id);e.setAttribute("x1",a.x);e.setAttribute("y1",a.y);e.setAttribute("x2",b.x);e.setAttribute("y2",b.y)}
+function avatar(p){let ks=[11,12,13,14,15,16,23,24,25,26,27,28];if(ks.some(k=>!p[k]))return;let xs=ks.map(k=>p[k].x),ys=ks.map(k=>p[k].y),mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys),w=Math.max(.25,mxx-mnx),h=Math.max(.45,mxy-mny),cx=(mnx+mxx)/2;const M=k=>({x:130+((1-p[k].x)-(1-cx))/w*165,y:105+(p[k].y-mny)/h*220});let ls=M(11),rs=M(12),le=M(13),re=M(14),lw=M(15),rw=M(16),lh=M(23),rh=M(24),lk=M(25),rk=M(26),la=M(27),ra=M(28),sh={x:(ls.x+rs.x)/2,y:(ls.y+rs.y)/2},hp={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/2};line("torso",sh,hp);line("uaL",ls,le);line("faL",le,lw);line("uaR",rs,re);line("faR",re,rw);line("thL",lh,lk);line("shL",lk,la);line("thR",rh,rk);line("shR",rk,ra);$("face").setAttribute("transform","translate("+(sh.x-130)+" "+(Math.max(38,sh.y-52)-62)+")")}
+function measure(p){let ls=p[11],rs=p[12],lh=p[23],rh=p[24];return{x:(ls.x+rs.x+lh.x+rh.x)/4,hip:(lh.y+rh.y)/2,sh:(ls.y+rs.y)/2,span:Math.abs(ls.x-rs.x),ls,rs,lw:p[15],rw:p[16],lk:p[25],rk:p[26]}}
+function calibrate(m){samples.push(m);let pc=Math.min(100,Math.round(samples.length/28*100));$("calBar").style.width=pc+"%";$("boot").textContent="المعايرة السريعة… "+pc+"%";if(samples.length>=28){["x","hip","sh","span"].forEach(k=>base[k]=samples.reduce((s,q)=>s+q[k],0)/samples.length);T.side=Math.max(.038,base.span*.21);T.jump=Math.max(.03,base.span*.15);T.duck=Math.max(.04,base.span*.20);cal=true;$("boot").textContent="جاهز ✓";setTimeout(()=>{$("startOverlay").style.display="none";round();beginStudentTimer()},300)}}
 function infer(m){
-  if(!cal){
-    calibrate(m);
-    return;
-  }
-
-  let a=null;
-
-  if(m.x<base.x-T.side){
-    a="right";
-  }else if(m.x>base.x+T.side){
-    a="left";
-  }
-
-  if(m.hip<base.hip-T.jump){
-    a="jump";
-  }else if(m.sh>base.sh+T.duck){
-    a="duck";
-  }
-
-  if(m.lw&&m.rw){
-    const hd=Math.hypot(
-      m.lw.x-m.rw.x,
-      m.lw.y-m.rw.y
-    );
-
-    if(
-      prevHandDist!==null &&
-      prevHandDist-hd>.035 &&
-      hd<T.clap
-    ){
-      a="clap";
-    }
-
-    prevHandDist=hd;
-  }
-
-  if(
-    prev &&
-    Math.abs(m.x-prev.x)<.01 &&
-    Math.abs(m.hip-prev.hip)<.01
-  ){
-    still++;
-  }else{
-    still=0;
-  }
-
-  prev=m;
-
-  if(still>8){
-    a="stop";
-  }
-
-  if(a && Date.now()-lastAct>220){
-    lastAct=Date.now();
-    movement(a);
-  }
+ if(!cal){calibrate(m);return}
+ if(level<3||!readOK||moveOK||!cur())return;
+ const wanted=cur()[2]; let a=null;
+ const bothUp=m.lw.y<m.ls.y-.045 && m.rw.y<m.rs.y-.045;
+ const rightUp=m.rw.y<m.rs.y-.055 && m.lw.y>m.ls.y-.02;
+ const leftUp=m.lw.y<m.ls.y-.055 && m.rw.y>m.rs.y-.02;
+ const armsOpen=Math.abs(m.lw.x-m.rw.x)>Math.max(.48,base.span*2.35) && Math.abs(m.lw.y-m.rw.y)<.16;
+ const leanDelta=m.x-base.x;
+ const kneeUp=(m.lk.y<m.hip+.16)||(m.rk.y<m.hip+.16);
+ const squat=m.hip>base.hip+Math.max(.055,T.duck);
+ const jump=m.hip<base.hip-Math.max(.035,T.jump);
+ if(wanted==="bothUp"&&bothUp)a=wanted;
+ else if(wanted==="rightUp"&&rightUp)a=wanted;
+ else if(wanted==="leftUp"&&leftUp)a=wanted;
+ else if(wanted==="armsOpen"&&armsOpen)a=wanted;
+ else if(wanted==="leanRight"&&leanDelta<-.055)a=wanted;
+ else if(wanted==="leanLeft"&&leanDelta>.055)a=wanted;
+ else if(wanted==="knee"&&kneeUp)a=wanted;
+ else if(wanted==="squat"&&squat)a=wanted;
+ else if(wanted==="jump"&&jump)a=wanted;
+ if(a===actionHold)actionFrames++;else{actionHold=a||"";actionFrames=a?1:0}
+ if(a&&actionFrames>=4&&Date.now()-lastAct>350){lastAct=Date.now();actionFrames=0;movement(a)}
 }
-
-function results(r){
-  processing=false;
-
-  if(r.poseLandmarks){
-    avatar(r.poseLandmarks);
-    infer(measure(r.poseLandmarks));
-  }
-}
-
-async function frame(){
-  if(
-    pose &&
-    !processing &&
-    $("video").readyState>=2
-  ){
-    processing=true;
-
-    try{
-      await pose.send({image:$("video")});
-    }catch(e){
-      processing=false;
-    }
-  }
-
-  requestAnimationFrame(frame);
-}
-
+function results(r){processing=false;if(r.poseLandmarks){avatar(r.poseLandmarks);infer(measure(r.poseLandmarks))}}
+async function frame(){if(pose&&!processing&&$("video").readyState>=2){processing=true;try{await pose.send({image:$("video")})}catch(e){processing=false}}requestAnimationFrame(frame)}
 async function setup(){
-  stream=await navigator.mediaDevices.getUserMedia({
-    video:{width:640,height:480},
-    audio:{
-      echoCancellation:true,
-      noiseSuppression:true,
-      autoGainControl:true
-    }
-  });
-
-  $("video").srcObject=stream;
-  await $("video").play();
-
-  const A=window.AudioContext||window.webkitAudioContext;
-
-  if(A){
-    audioCtx=musicCtx||new A();
-
-    if(audioCtx.state==="suspended"){
-      try{await audioCtx.resume()}catch(e){}
-    }
-
-    const source=audioCtx.createMediaStreamSource(stream);
-
-    audioAnalyser=audioCtx.createAnalyser();
-    audioAnalyser.fftSize=256;
-
-    source.connect(audioAnalyser);
-  }
-
-  if(typeof Pose==="undefined"){
-    throw Error("تعذر تحميل تتبع الجسم");
-  }
-
-  pose=new Pose({
-    locateFile:f=>"https://cdn.jsdelivr.net/npm/@mediapipe/pose/"+f
-  });
-
-  pose.setOptions({
-    modelComplexity:0,
-    smoothLandmarks:true,
-    minDetectionConfidence:.5,
-    minTrackingConfidence:.5
-  });
-
-  pose.onResults(results);
-  requestAnimationFrame(frame);
-
-  setupRecognition();
-  startMicWatch();
+ stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+ $("video").srcObject=stream;await $("video").play();
+ let A=window.AudioContext||window.webkitAudioContext;
+ if(A){audioCtx=musicCtx||new A();if(audioCtx.state==="suspended")try{await audioCtx.resume()}catch(e){}let source=audioCtx.createMediaStreamSource(stream);audioAnalyser=audioCtx.createAnalyser();audioAnalyser.fftSize=256;source.connect(audioAnalyser)}
+ if(typeof Pose==="undefined")throw Error("تعذر تحميل تتبع الجسم");
+ pose=new Pose({locateFile:f=>"https://cdn.jsdelivr.net/npm/@mediapipe/pose/"+f});
+ pose.setOptions({modelComplexity:0,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});pose.onResults(results);requestAnimationFrame(frame);
+ setupRecognition();startMicWatch();
 }
-
 function startMicWatch(){
-  clearInterval(micWatch);
-
-  micWatch=setInterval(()=>{
-    const track=stream&&stream.getAudioTracks()[0];
-
-    if(!track||track.readyState!=="live"){
-      $("micState").textContent="الميكروفون توقف";
-      return;
-    }
-
-    if(audioAnalyser){
-      const d=new Uint8Array(audioAnalyser.frequencyBinCount);
-      audioAnalyser.getByteFrequencyData(d);
-
-      const avg=d.reduce((a,b)=>a+b,0)/Math.max(1,d.length);
-
-      $("vuBar").style.width=Math.min(100,avg*2.3)+"%";
-    }
-
-    if(
-      cal &&
-      !readOK &&
-      !recRunning &&
-      !restartTimer &&
-      !sessionEnded
-    ){
-      scheduleRecognition(120);
-    }
-  },300);
+ clearInterval(micWatch);
+ micWatch=setInterval(()=>{
+   let track=stream&&stream.getAudioTracks()[0];
+   if(!track||track.readyState!=="live"){$("micState").textContent="الميكروفون توقف";return}
+   if(audioAnalyser){let d=new Uint8Array(audioAnalyser.frequencyBinCount);audioAnalyser.getByteFrequencyData(d);let avg=d.reduce((a,b)=>a+b,0)/Math.max(1,d.length);$("vuBar").style.width=Math.min(100,avg*2.3)+"%"}
+   if(cal&&!readOK&&!recRunning&&!restartTimer){scheduleRecognition(120)}
+ },300);
 }
-
 function scheduleRecognition(ms=250){
-  if(
-    restartTimer ||
-    readOK ||
-    !cal ||
-    sessionEnded
-  )return;
-
-  const token=promptToken;
-
-  restartTimer=setTimeout(()=>{
-    restartTimer=null;
-
-    if(
-      token===promptToken &&
-      !readOK &&
-      !sessionEnded
-    ){
-      listenForCurrent(token);
-    }
-  },ms);
+ if(restartTimer||readOK||!cal)return;
+ let token=promptToken;
+ restartTimer=setTimeout(()=>{restartTimer=null;if(token===promptToken&&!readOK)listenForCurrent(token)},ms);
 }
-
 function setupRecognition(){
-  const SR=
-    window.SpeechRecognition||
-    window.webkitSpeechRecognition;
-
-  if(!SR){
-    $("micState").textContent="غير مدعوم";
-    $("message").textContent="التعرف الصوتي غير متاح في هذا المتصفح";
-    $("diagError").textContent="SpeechRecognition غير متاح";
-    return;
-  }
-
-  rec=new SR();
-
-  rec.continuous=true;
-  rec.interimResults=true;
-  rec.maxAlternatives=5;
-
-  setRecognitionLanguage("ar-BH");
-
-  $("micState").textContent="جاهز";
+ let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$("micState").textContent="غير مدعوم";$("message").textContent="التعرف الصوتي غير متاح";return}
+ rec=new SR();
+ rec.lang=speechLangs[speechLangIndex];
+ rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;
+ $("micState").textContent="جاهز";
 }
-
-function setRecognitionLanguage(lang){
-  speechLang=lang;
-
-  if(rec){
-    rec.lang=lang;
-  }
-
-  $("diagLang").textContent=lang;
-}
-
-function startFallbackTimer(token){
-  clearTimeout(speechFallbackTimer);
-
-  speechFallbackTimer=setTimeout(()=>{
-
-    if(
-      token!==promptToken ||
-      readOK ||
-      sessionEnded ||
-      speechResultSeen
-    )return;
-
-    /*
-    إذا الصوت وصل فعلًا ولكن Edge لم يُرجع أي Transcript،
-    نجرب العربية السعودية مرة واحدة.
-    */
-    if(
-      promptVoiceSeen &&
-      !speechFallbackUsed &&
-      speechLang==="ar-BH"
-    ){
-      speechFallbackUsed=true;
-
-      $("diagError").textContent=
-        "لا يوجد نص من ar-BH — تجربة ar-SA";
-
-      setRecognitionLanguage("ar-SA");
-
-      if(recRunning && rec){
-        try{rec.abort()}catch(e){}
-        recRunning=false;
-      }
-
-      scheduleRecognition(350);
-    }
-
-  },4000);
-}
-
 function listenForCurrent(token){
-  if(
-    !rec ||
-    readOK ||
-    token!==promptToken ||
-    i>=items.length ||
-    recRunning ||
-    sessionEnded
-  )return;
-
-  speechResultSeen=false;
-
-  rec.onstart=()=>{
-    recRunning=true;
-
-    $("micState").textContent="مفتوح";
-    $("diagRec").textContent="يستمع الآن ✓";
-    $("diagError").textContent="—";
-    $("diagLang").textContent=speechLang;
-
-    duckMusic(true);
-
-    $("instruction").textContent=
-      level===1
-      ?"🎤 انطق اسم الحرف الآن"
-      :"🎤 اقرأ الآن";
-
-    startFallbackTimer(token);
-  };
-
-  rec.onaudiostart=()=>{
-    $("diagRec").textContent="الصوت دخل للمحرك ✓";
-  };
-
-  rec.onspeechstart=()=>{
-    $("diagRec").textContent="رصد كلام ✓";
-  };
-
-  rec.onresult=e=>{
-    if(
-      token!==promptToken ||
-      sessionEnded
-    )return;
-
-    speechResultSeen=true;
-    clearTimeout(speechFallbackTimer);
-
-    const heard=[];
-
-    for(
-      let r=e.resultIndex;
-      r<e.results.length;
-      r++
-    ){
-      for(
-        let k=0;
-        k<e.results[r].length;
-        k++
-      ){
-        const text=norm(e.results[r][k].transcript);
-
-        if(text){
-          heard.push(text);
-        }
-      }
-    }
-
-    if(heard.length){
-      $("diagText").textContent=heard.join(" | ");
-      $("diagError").textContent="—";
-
-      checkSpeech(heard,token);
-    }
-  };
-
-  rec.onerror=e=>{
-    recRunning=false;
-    clearTimeout(speechFallbackTimer);
-    duckMusic(false);
-
-    const err=e.error||"unknown";
-
-    $("diagRec").textContent="توقف";
-    $("diagError").textContent=err;
-
-    if(
-      token!==promptToken ||
-      sessionEnded
-    )return;
-
-    if(
-      err==="not-allowed" ||
-      err==="service-not-allowed"
-    ){
-      $("micState").textContent="الإذن مرفوض";
-      $("message").textContent="🎤 اسمح للميكروفون من المتصفح";
-      return;
-    }
-
-    if(err==="audio-capture"){
-      $("micState").textContent="مشكلة في الميكروفون";
-      $("message").textContent="تعذر الوصول للميكروفون";
-      return;
-    }
-
-    /*
-    no-speech لا يعني أن اللعبة انتهت.
-    نحاول الاستماع من جديد.
-    */
-    $("micState").textContent="إعادة تلقائية";
-
-    scheduleRecognition(350);
-  };
-
-  rec.onend=()=>{
-    recRunning=false;
-    clearTimeout(speechFallbackTimer);
-    duckMusic(false);
-
-    if(
-      token===promptToken &&
-      !readOK &&
-      !sessionEnded
-    ){
-      $("diagRec").textContent="توقف/يعيد التشغيل…";
-      $("micState").textContent="إعادة تلقائية";
-
-      scheduleRecognition(250);
-    }
-  };
-
-  try{
-    rec.start();
-  }catch(err){
-    recRunning=false;
-    $("diagError").textContent=
-      err&&err.message
-      ?err.message
-      :"تعذر بدء الاستماع";
-
-    scheduleRecognition(350);
-  }
+ if(!rec||readOK||token!==promptToken||i>=items.length||recRunning||sessionEnded)return;
+ recognitionHadResult=false;
+ rec.lang=speechLangs[speechLangIndex];
+ let diagText=document.getElementById("diagText");
+ let diagRec=document.getElementById("diagRec");
+ if(diagText)diagText.textContent="—";
+ rec.onstart=()=>{
+   recRunning=true;$("micState").textContent="مفتوح";duckMusic(true);
+   if(diagRec)diagRec.textContent="يستمع الآن ✓ ("+rec.lang+")";
+   $("instruction").textContent=level===1?"🎤 انطق الحرف الآن":"🎤 اقرأ الآن";
+   clearTimeout(recognitionWatchdog);
+   if(!speechFallbackStartedAt)speechFallbackStartedAt=Date.now();
+   let remaining=Math.max(250,1800-(Date.now()-speechFallbackStartedAt));
+   recognitionWatchdog=setTimeout(()=>{
+     if(token!==promptToken||readOK||sessionEnded||recognitionHadResult)return;
+     if(promptVoiceSeen&&speechLangIndex===0){
+       speechLangIndex=1;
+       rec.lang=speechLangs[speechLangIndex];
+       if(diagRec)diagRec.textContent="لم يرجع نص من ar-BH — التحويل إلى ar-SA";
+       try{rec.abort()}catch(e){}
+     }
+   },remaining);
+ };
+ rec.onresult=e=>{
+   if(token!==promptToken||sessionEnded)return;
+   recognitionHadResult=true;
+   clearTimeout(recognitionWatchdog);
+   let heard=[];
+   for(let r=e.resultIndex;r<e.results.length;r++)for(let k=0;k<e.results[r].length;k++){let t=norm(e.results[r][k].transcript);if(t)heard.push(t)}
+   if(diagText&&heard.length)diagText.textContent=heard.join(" | ");
+   if(heard.length)checkSpeech(heard,token);
+ };
+ rec.onerror=e=>{
+   recRunning=false;duckMusic(false);
+   let err=e.error||"غير معروف";
+   if(diagRec)diagRec.textContent="خطأ: "+err+" ("+rec.lang+")"; let de=document.getElementById("diagError");if(de)de.textContent=err;
+   if(token!==promptToken||sessionEnded)return;
+   if(err==="aborted"){
+     if(diagRec)diagRec.textContent=speechLangIndex===1?"الانتقال إلى ar-SA…":"إعادة تشغيل الاستماع…";
+     scheduleRecognition(180);
+     return;
+   }
+   clearTimeout(recognitionWatchdog);
+   if(err==="not-allowed"||err==="service-not-allowed"){$("micState").textContent="الإذن مرفوض";$("message").textContent="🎤 اسمح للميكروفون من المتصفح";return}
+   if((err==="no-speech"||err==="network"||err==="language-not-supported")&&speechLangIndex===0)speechLangIndex=1;
+   $("micState").textContent="إعادة تلقائية";scheduleRecognition(250);
+ };
+ rec.onend=()=>{
+   recRunning=false;duckMusic(false);
+   if(token===promptToken&&!readOK&&!sessionEnded){$("micState").textContent="إعادة تلقائية";scheduleRecognition(180)}
+ };
+ try{rec.start()}catch(err){recRunning=false;clearTimeout(recognitionWatchdog);if(diagRec)diagRec.textContent="تعذر البدء: "+err.message;scheduleRecognition(350)}
 }
-
+function resetCuePose(){
+ const la=$("cueLArm"),ra=$("cueRArm"),ll=$("cueLLeg"),rl=$("cueRLeg"),b=$("cueBody");
+ [la,ra,ll,rl].forEach(e=>e.setAttribute("transform",""));b.setAttribute("transform","");
+}
+function showMoveCue(action){
+ resetCuePose(); const box=$("moveCue"),la=$("cueLArm"),ra=$("cueRArm"),ll=$("cueLLeg"),rl=$("cueRLeg"),b=$("cueBody");
+ box.style.display="flex";box.classList.add("cuePulse");
+ if(action==="bothUp"){la.setAttribute("transform","rotate(145 72 61)");ra.setAttribute("transform","rotate(-145 88 61)")}
+ if(action==="rightUp"){ra.setAttribute("transform","rotate(-145 88 61)")}
+ if(action==="leftUp"){la.setAttribute("transform","rotate(145 72 61)")}
+ if(action==="armsOpen"){la.setAttribute("transform","rotate(45 72 61)");ra.setAttribute("transform","rotate(-45 88 61)")}
+ if(action==="leanRight"){b.setAttribute("transform","rotate(16 80 100)")}
+ if(action==="leanLeft"){b.setAttribute("transform","rotate(-16 80 100)")}
+ if(action==="knee"){rl.setAttribute("transform","rotate(-62 86 99)")}
+ if(action==="squat"){b.setAttribute("transform","translate(0 20) scale(1 .78)");ll.setAttribute("transform","rotate(28 74 99)");rl.setAttribute("transform","rotate(-28 86 99)")}
+ if(action==="jump"){b.setAttribute("transform","translate(0 -20)");la.setAttribute("transform","rotate(125 72 61)");ra.setAttribute("transform","rotate(-125 88 61)")}
+}
+function hideMoveCue(){let b=$("moveCue");if(b){b.style.display="none";b.classList.remove("cuePulse")}resetCuePose()}
 function checkSpeech(h,token){
-  if(!promptVoiceSeen)return;
+  if(!promptVoiceSeen) return;
 
-  if(
-    token!==promptToken ||
-    readOK ||
-    !cur() ||
-    sessionEnded
-  )return;
-
-  studentAttempts++;
-
-  const answers=cur()[1].map(norm);
-
-  let ok=false;
-
-  if(level===1){
-    ok=answers.some(a=>
-      h.some(x=>x===a)
-    );
-  }else{
-    ok=answers.some(a=>
-      h.some(x=>
-        x===a ||
-        (a.length>1&&x.includes(a))
-      )
-    );
-  }
-
-  if(!ok){
-    $("message").textContent="🔁 حاول مرة أخرى";
-    $("micState").textContent="مفتوح";
-    duckMusic(true);
-    return;
-  }
-
-  readOK=true;
-  studentCorrect++;
-
-  clearTimeout(speechFallbackTimer);
-
-  duckMusic(false);
-
-  $("micState").textContent="صحيح ✓";
-
-  score+=10;
-  $("score").textContent=score;
-
-  applause();
-
-  $("game").classList.add("flash");
-
-  setTimeout(()=>{
-    $("game").classList.remove("flash");
-  },450);
-
-  if(level===1){
-    $("message").textContent="👏 ممتاز!";
-    $("word").textContent=cur()[2];
-    $("instruction").textContent="مثال يبدأ بهذا الحرف";
-
-    unlockAdvance("reading");
-
-    clearTimeout(nextTimer);
-
-    nextTimer=setTimeout(()=>{
-      advance("reading");
-    },2400);
-
-  }else if(level===2){
-    $("message").textContent="👏 قراءة صحيحة!";
-
-    unlockAdvance("reading");
-
-    clearTimeout(nextTimer);
-
-    nextTimer=setTimeout(()=>{
-      advance("reading");
-    },1400);
-
-  }else{
-    $("message").textContent="👏 صحيح! نفّذ الحركة";
-    $("instruction").textContent="تحرك الآن";
-
-    advanceUnlocked=false;
-    advanceReason="";
-  }
+ if(token!==promptToken||readOK||!cur())return;
+ studentAttempts++;
+ let answers=cur()[1].map(norm);
+ let ok;
+ if(level===1){ok=answers.some(a=>h.some(x=>x===a || (a.length>1&&x.includes(a))))}
+ else{ok=answers.some(a=>h.some(x=>x===a || (a.length>1&&x.includes(a))))}
+ if(!ok){$("message").textContent="🔁 حاول مرة أخرى";$("micState").textContent="مفتوح";duckMusic(true);return}
+ readOK=true;studentCorrect++;duckMusic(false);$("micState").textContent="صحيح ✓";score+=10;$("score").textContent=score;applause();
+ $("game").classList.add("flash");setTimeout(()=>$("game").classList.remove("flash"),450);
+ if(level===1){
+   $("message").textContent="👏 ممتاز!";
+   $("word").textContent=cur()[2];$("instruction").textContent="مثال يبدأ بهذا الحرف";
+   unlockAdvance("reading");
+   clearTimeout(nextTimer);nextTimer=setTimeout(()=>advance("reading"),2400);
+ }else if(level===2){
+   $("message").textContent="👏 قراءة صحيحة!";
+   unlockAdvance("reading");
+   clearTimeout(nextTimer);nextTimer=setTimeout(()=>advance("reading"),1400);
+ }else{
+   $("message").textContent="";
+   $("instruction").textContent="";
+   $("word").textContent="";
+   showMoveCue(cur()[2]);
+   actionHold="";actionFrames=0;
+   advanceUnlocked=false;advanceReason="";
+ }
 }
-
-function unlockAdvance(reason){
-  advanceUnlocked=true;
-  advanceReason=reason;
-}
-
+function unlockAdvance(reason){advanceUnlocked=true;advanceReason=reason}
 function advance(reason){
-  if(
-    !advanceUnlocked ||
-    advanceReason!==reason
-  )return;
-
-  if(
-    reason==="reading" &&
-    !(readOK&&level<=2)
-  )return;
-
-  if(
-    reason==="movement" &&
-    !(readOK&&moveOK&&level>=3)
-  )return;
-
-  advanceUnlocked=false;
-  advanceReason="";
-
-  promptToken++;
-  promptVoiceSeen=false;
-  promptVoicePeak=0;
-
-  clearTimeout(restartTimer);
-  clearTimeout(speechFallbackTimer);
-
-  restartTimer=null;
-
-  if(recRunning&&rec){
-    try{rec.abort()}catch(e){}
-    recRunning=false;
-  }
-
-  i++;
-
-  setTimeout(round,120);
+ if(!advanceUnlocked||advanceReason!==reason)return;
+ if(reason==="reading" && !(readOK && level<=2))return;
+ if(reason==="movement" && !(readOK && moveOK && level>=3))return;
+ advanceUnlocked=false;advanceReason="";
+ promptToken++; promptVoiceSeen=false; promptVoicePeak=0;clearTimeout(restartTimer);restartTimer=null;
+ if(recRunning){try{rec.abort()}catch(e){}recRunning=false}
+ i++;setTimeout(round,120);
 }
-
 function movement(m){
-  if(
-    level<3 ||
-    !readOK ||
-    moveOK ||
-    !cur() ||
-    sessionEnded
-  )return;
-
-  if(m!==cur()[2])return;
-
-  moveOK=true;
-  studentMoves++;
-
-  score+=15;
-  $("score").textContent=score;
-
-  applause();
-
-  $("message").textContent="🌟 ممتاز!";
-
-  const a=$("aw");
-
-  if(m==="left"){
-    a.style.left="40%";
-  }
-
-  if(m==="right"){
-    a.style.left="60%";
-  }
-
-  if(m==="jump"){
-    a.style.bottom="85px";
-
-    setTimeout(()=>{
-      a.style.bottom="8px";
-    },300);
-  }
-
-  unlockAdvance("movement");
-
-  clearTimeout(nextTimer);
-
-  nextTimer=setTimeout(()=>{
-    advance("movement");
-  },900);
+ if(level<3||!readOK||moveOK||!cur())return;
+ if(m!==cur()[2])return;
+ moveOK=true;studentMoves++;score+=15;$("score").textContent=score;applause();hideMoveCue();$("message").textContent="🌟 ممتاز!";
+ unlockAdvance("movement");
+ clearTimeout(nextTimer);nextTimer=setTimeout(()=>advance("movement"),900);
 }
-
 function round(){
-  if(sessionEnded)return;
+ if(sessionEnded)return;
+ if(i>=items.length){
+   let last=items.length?items[items.length-1][0]:null;prepareItems();
+   if(items.length>1&&items[0][0]===last){let t=items[0];items[0]=items[1];items[1]=t}
+ }
 
-  if(i>=items.length){
-    const last=items.length
-      ?items[items.length-1][0]
-      :null;
-
-    prepareItems();
-
-    if(
-      items.length>1 &&
-      items[0][0]===last
-    ){
-      const t=items[0];
-      items[0]=items[1];
-      items[1]=t;
-    }
-  }
-
-  clearTimeout(nextTimer);
-  clearTimeout(speechFallbackTimer);
-
-  advanceUnlocked=false;
-  advanceReason="";
-
-  promptToken++;
-
-  promptVoiceSeen=false;
-  promptVoicePeak=0;
-
-  readOK=false;
-  moveOK=false;
-
-  still=0;
-  prev=null;
-  prevHandDist=null;
-
-  /*
-  كل سؤال يبدأ باللهجة البحرينية.
-  وإذا لم يعد Edge نصًا نجرب ar-SA تلقائيًا.
-  */
-  speechFallbackUsed=false;
-  speechResultSeen=false;
-  setRecognitionLanguage("ar-BH");
-
-  $("diagText").textContent="—";
-  $("diagError").textContent="—";
-
-  $("count").textContent=(i+1)+"/"+items.length;
-
-  $("word").textContent=cur()[0];
-
-  $("instruction").textContent=
-    level===1
-    ?"استعد لنطق الحرف"
-    :"استعد للقراءة";
-
-  $("message").textContent="";
-  $("micState").textContent="استعد";
-
-  const t=promptToken;
-
-  setTimeout(()=>{
-    listenForCurrent(t);
-  },350);
+ clearTimeout(nextTimer);advanceUnlocked=false;advanceReason="";
+ promptToken++; promptVoiceSeen=false; promptVoicePeak=0;readOK=false;moveOK=false;still=0;prev=null;prevHandDist=null;actionHold="";actionFrames=0;hideMoveCue();
+ speechLangIndex=0;recognitionHadResult=false;speechFallbackStartedAt=Date.now();clearTimeout(recognitionWatchdog);
+ $("count").textContent=(i+1)+"/"+items.length;$("word").textContent=cur()[0];
+ $("instruction").textContent=level===1?"استعد لنطق الحرف":"استعد للقراءة";
+ $("message").textContent="";$("micState").textContent="استعد";
+ let t=promptToken;setTimeout(()=>listenForCurrent(t),350);
 }
-
-function spawn(){
-  const o=document.createElement("div");
-
-  o.className="ob";
-
-  o.textContent=
-    ["🚆","🚧","⭐","🎁"]
-    [Math.floor(Math.random()*4)];
-
-  o.style.left=
-    ["34%","50%","66%"]
-    [Math.floor(Math.random()*3)];
-
-  $("game").appendChild(o);
-
-  setTimeout(()=>{
-    o.remove();
-  },2800);
-}
-
-$("start").onclick=async()=>{
-  try{
-    const AC=
-      window.AudioContext||
-      window.webkitAudioContext;
-
-    if(AC){
-      musicCtx=musicCtx||new AC();
-
-      try{
-        await musicCtx.resume();
-      }catch(e){}
-    }
-
-    level=+$("level").value;
-
-    const nm=$("studentName").value.trim();
-    const cl=$("studentClass").value;
-
-    if(!nm||!cl){
-      $("formMsg").textContent=
-        "اكتبي اسم الطالب واختاري الصف أولاً.";
-      return;
-    }
-
-    $("formMsg").textContent="";
-
-    prepareItems();
-
-    score=0;
-    $("score").textContent=0;
-    $("count").textContent="0/"+items.length;
-
-    $("start").disabled=true;
-
-    startMusic();
-
-    setTimeout(applause,180);
-
-    clearInterval(spawnTimer);
-    spawnTimer=setInterval(spawn,1250);
-
-    if(!setupDone){
-      $("boot").textContent=
-        "جارٍ تشغيل الكاميرا والميكروفون…";
-
-      await setup();
-
-      setupDone=true;
-
-      $("boot").textContent=
-        "قف طبيعيًا للمعايرة السريعة…";
-
-    }else if(cal){
-      $("boot").textContent="جاهز ✓";
-      $("startOverlay").style.display="none";
-
-      round();
-      beginStudentTimer();
-
-    }else{
-      $("boot").textContent=
-        "قف طبيعيًا للمعايرة السريعة…";
-    }
-
-  }catch(e){
-    $("boot").textContent=e.message;
-    $("start").disabled=false;
-  }
-};
-
-$("gear").onclick=()=>{
-  $("settings").style.display=
-    $("settings").style.display==="block"
-    ?"none"
-    :"block";
-};
-
-$("recal").onclick=()=>{
-  cal=false;
-  samples=[];
-  $("calBar").style.width=0;
-  $("startOverlay").style.display="flex";
-};
+function spawn(){let o=document.createElement("div");o.className="ob";o.textContent=["🚆","🚧","⭐","🎁"][Math.floor(Math.random()*4)];o.style.left=["34%","50%","66%"][Math.floor(Math.random()*3)];$("game").appendChild(o);setTimeout(()=>o.remove(),2800)}
+function finish(){
+ clearInterval(spawnTimer);clearTimeout(nextTimer);clearTimeout(restartTimer);restartTimer=null;
+ advanceUnlocked=false;promptToken++; promptVoiceSeen=false; promptVoicePeak=0;
+ if(recRunning){try{rec.abort()}catch(e){}recRunning=false}
+ $("endOverlay").style.display="flex";$("final").innerHTML="⭐ جمعت <b>"+score+"</b> نقطة<br>📚 أنهيت المستوى "+level}
+$("start").onclick=async()=>{try{
+ let AC=window.AudioContext||window.webkitAudioContext;
+ if(AC){musicCtx=musicCtx||new AC();try{await musicCtx.resume()}catch(e){}}
+ level=+$("level").value;
+ let nm=$("studentName").value.trim(),cl=$("studentClass").value;
+ if(!nm||!cl){$("formMsg").textContent="اكتبي اسم الطالب واختاري الصف أولاً.";return}
+ $("formMsg").textContent="";prepareItems();score=0;$("score").textContent=0;$("count").textContent="0/"+items.length;
+ $("start").disabled=true;startMusic();setTimeout(applause,180);
+ clearInterval(spawnTimer);spawnTimer=setInterval(spawn,1250);
+ if(!setupDone){
+   $("boot").textContent="جارٍ تشغيل الكاميرا والميكروفون…";
+   await setup();setupDone=true;$("boot").textContent="قف طبيعيًا للمعايرة السريعة…";
+ }else if(cal){
+   $("boot").textContent="جاهز ✓";$("startOverlay").style.display="none";round();beginStudentTimer();
+ }else{
+   $("boot").textContent="قف طبيعيًا للمعايرة السريعة…";
+ }
+}catch(e){$("boot").textContent=e.message;$("start").disabled=false}};
+$("gear").onclick=()=>$("settings").style.display=$("settings").style.display==="block"?"none":"block";$("recal").onclick=()=>{cal=false;samples=[];$("calBar").style.width=0;$("startOverlay").style.display="flex"};
 
 $("level").onchange=()=>{
-  level=+$("level").value;
-
-  prepareItems();
-
-  promptToken++;
-  promptVoiceSeen=false;
-  promptVoicePeak=0;
-
-  readOK=false;
-  moveOK=false;
-
-  still=0;
-  prev=null;
-  prevHandDist=null;
-
-  advanceUnlocked=false;
-  advanceReason="";
-
-  clearTimeout(nextTimer);
-  clearTimeout(restartTimer);
-  clearTimeout(speechFallbackTimer);
-
-  restartTimer=null;
-
-  speechFallbackUsed=false;
-  speechResultSeen=false;
-
-  setRecognitionLanguage("ar-BH");
-
-  $("count").textContent="0/"+items.length;
-
-  if(recRunning&&rec){
-    try{rec.abort()}catch(e){}
-    recRunning=false;
-  }
-
-  if(
-    cal &&
-    $("startOverlay").style.display==="none" &&
-    !sessionEnded
-  ){
-    setTimeout(round,350);
-  }
+ level=+$("level").value;prepareItems();
+ promptToken++; promptVoiceSeen=false; promptVoicePeak=0;readOK=false;moveOK=false;still=0;prev=null;prevHandDist=null;advanceUnlocked=false;advanceReason="";clearTimeout(nextTimer);
+ $("count").textContent="0/"+items.length;
+ clearTimeout(restartTimer);restartTimer=null;if(recRunning){try{rec.abort()}catch(e){}recRunning=false}
+ if(cal&&$("startOverlay").style.display==="none"&&!sessionEnded)setTimeout(round,350);
 };
+$("music").onchange=()=>{if($("music").value==="off")stopMusic();else if(!sessionEnded)startMusic()};
 
-$("music").onchange=()=>{
-  if($("music").value==="off"){
-    stopMusic();
-  }else if(!sessionEnded){
-    startMusic();
-  }
-};
 
 $("nextStudent").onclick=()=>{
-  $("timeOverlay").style.display="none";
-
-  $("bgMusic").pause();
-
-  score=0;
-  $("score").textContent=0;
-
-  $("studentName").value="";
-  $("studentName").focus();
-
-  $("start").disabled=false;
-
-  $("boot").textContent=
-    "اكتبي بيانات الطالب التالي ثم ابدئي.";
-
-  $("startOverlay").style.display="flex";
+ $("timeOverlay").style.display="none";$("bgMusic").pause();score=0;$("score").textContent=0;
+ $("studentName").value="";$("studentName").focus();$("start").disabled=false;$("boot").textContent="اكتبي بيانات الطالب التالي ثم ابدئي.";
+ $("startOverlay").style.display="flex";
 };
-
-$("showStats").onclick=()=>{
-  renderStats();
-  $("statsOverlay").style.display="block";
-};
-
-$("closeStats").onclick=()=>{
-  $("statsOverlay").style.display="none";
-};
-
-/*
-لوحة التشخيص
-*/
-setInterval(()=>{
-  try{
-    $("diagAudio").textContent=
-      promptVoiceSeen
-      ?"الصوت وصل ✓"
-      :"لم يصل صوت بعد";
-
-    if(!recRunning && !sessionEnded){
-      if(
-        $("diagRec").textContent==="غير معروف"
-      ){
-        $("diagRec").textContent="جاهز";
-      }
-    }
-
-    $("diagLang").textContent=speechLang;
-
-  }catch(e){}
-},250);
-
-</script>
-
-</body>
-</html>
+$("showStats").onclick=()=>{renderStats();$("statsOverlay").style.display="block"};
+$("closeStats").onclick=()=>{$("statsOverlay").style.display="none"};
+</script><audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio><div id="speechDiag" style="position:fixed;right:14px;bottom:14px;z-index:99999;background:#071b2fee;color:white;padding:12px 15px;border-radius:16px;font-family:Tahoma;direction:rtl;min-width:300px"><b>تشخيص الصوت — V14</b><div>🎤 وصول الصوت: <strong id="diagAudio">بانتظار الصوت</strong></div><div>👂 محرك الاستماع: <strong id="diagRec">غير معروف</strong></div><div>🌐 لغة المحرك: <strong id="diagLang">ar-BH</strong></div><div>📝 Edge سمع: <strong id="diagText">—</strong></div><div>⚠️ آخر حالة: <strong id="diagError">—</strong></div></div><script>
+setInterval(()=>{try{
+ document.getElementById("diagAudio").textContent=(typeof promptVoiceSeen!=="undefined"&&promptVoiceSeen)?"الصوت وصل ✓":"لم يصل صوت بعد";
+ document.getElementById("diagRec").textContent=(typeof recRunning!=="undefined"&&recRunning)?"يستمع الآن ✓":"متوقف";
+ let dl=document.getElementById("diagLang");if(dl)dl.textContent=(typeof speechLangs!=="undefined")?speechLangs[speechLangIndex]:"—";
+}catch(e){}},250);
+window.addEventListener("load",()=>{try{
+ if(typeof rec!=="undefined"&&rec){
+  rec.addEventListener("result",e=>{let a=[];for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i][0])a.push(e.results[i][0].transcript);if(a.length)document.getElementById("diagText").textContent=a.join(" | ")});
+  rec.addEventListener("start",()=>document.getElementById("diagRec").textContent="يستمع الآن ✓");
+  rec.addEventListener("end",()=>document.getElementById("diagRec").textContent="توقف/يعيد التشغيل…");
+  rec.addEventListener("error",e=>document.getElementById("diagRec").textContent="خطأ: "+e.error);
+ }
+}catch(e){}});</script></body></html>
