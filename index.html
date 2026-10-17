@@ -1,6 +1,6 @@
 <!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>مغامرة القراءة الحركية V14</title>
+<title>مغامرة القراءة الحركية V14.6</title>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial;background:#06192c;color:#fff;overflow:hidden}
@@ -17,9 +17,8 @@
 .hud{position:absolute;z-index:50;top:18px;right:18px;display:flex;gap:8px}.chip{background:#12304ddd;padding:9px 14px;border-radius:999px;font-size:20px;font-weight:900}
 .cam{position:absolute;z-index:40;left:14px;bottom:14px;width:155px;aspect-ratio:4/3;border:3px solid #fff;border-radius:18px;overflow:hidden;background:#111}video,canvas{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}canvas{z-index:2}
 #message{position:absolute;z-index:45;left:50%;top:27%;transform:translateX(-50%);font-size:31px;font-weight:900;text-shadow:0 3px 9px #0009;text-align:center}
-#moveCue{display:none;position:absolute;z-index:46;left:50%;top:27%;transform:translateX(-50%);width:190px;height:190px;background:#fff;border:6px solid #ffe46b;border-radius:34px;box-shadow:0 14px 35px #0007;align-items:center;justify-content:center}
-#moveCue svg{width:155px;height:155px;overflow:visible}
-#cueBody{transform-origin:80px 85px;transition:transform .2s}.cueLArm,.cueRArm,.cueLLeg,.cueRLeg{transform-box:fill-box;transform-origin:top center;transition:transform .2s}.cuePulse{animation:cuePulse .65s infinite alternate}@keyframes cuePulse{to{transform:translateX(-50%) scale(1.07)}}
+#moveCue{display:none;position:absolute;z-index:46;left:50%;top:24%;transform:translateX(-50%);width:245px;height:245px;background:#fff;border:7px solid #ffe46b;border-radius:38px;box-shadow:0 14px 35px #0007;align-items:center;justify-content:center;overflow:hidden}
+#moveCue svg{width:220px;height:220px;overflow:visible}.cueArrow{font:900 34px Tahoma,Arial;fill:#ff5c78;filter:drop-shadow(0 2px 1px #fff)}.cueHint{opacity:.9}.cuePulse{animation:cuePulse .7s infinite alternate}@keyframes cuePulse{to{transform:translateX(-50%) scale(1.035)}}
 .overlay{position:absolute;z-index:100;inset:0;background:linear-gradient(#133456ee,#07182bf7);display:flex;align-items:center;justify-content:center;padding:20px}.panel{width:min(700px,94vw);background:#fff;color:#1d3048;border-radius:34px;padding:30px;text-align:center;box-shadow:0 25px 70px #0008}.panel h1{font-size:43px;margin:0 0 8px}.panel p{color:#657488;line-height:1.7}
 button,input,select{font:inherit;border:0;border-radius:14px;padding:12px}.start{width:100%;font-size:23px;font-weight:900;background:#ff6598;color:#fff;cursor:pointer}.gear{position:absolute;z-index:80;left:16px;top:16px;width:45px;height:45px;border-radius:50%;font-size:20px}
 #settings{display:none;position:absolute;z-index:90;left:16px;top:68px;width:315px;background:#fffffff4;color:#26384e;border-radius:18px;padding:15px}.row{display:grid;gap:5px;margin:8px 0}
@@ -32,12 +31,7 @@ button,input,select{font:inherit;border:0;border-radius:14px;padding:12px}.start
 </div><div id="game">
 <div class="cloud c1"></div><div class="cloud c2"></div><div class="city"></div><div class="road"></div><div class="line l1"></div><div class="line l2"></div>
 <div class="card"><div id="word">مغامرة القراءة</div><div id="instruction" class="sub">اقرأ • تحرك • اجمع النجوم</div></div><div id="message"></div>
-<div id="moveCue" aria-label="إشارة الحركة"><svg viewBox="0 0 160 160">
-<g id="cueBody"><circle cx="80" cy="31" r="19" fill="#f4b78f" stroke="#24364b" stroke-width="4"/><line x1="80" y1="52" x2="80" y2="103" stroke="#18a6b9" stroke-width="18" stroke-linecap="round"/>
-<line id="cueLArm" class="cueLArm" x1="72" y1="61" x2="39" y2="91" stroke="#f4b78f" stroke-width="12" stroke-linecap="round"/>
-<line id="cueRArm" class="cueRArm" x1="88" y1="61" x2="121" y2="91" stroke="#f4b78f" stroke-width="12" stroke-linecap="round"/>
-<line id="cueLLeg" class="cueLLeg" x1="74" y1="99" x2="55" y2="143" stroke="#294b91" stroke-width="13" stroke-linecap="round"/>
-<line id="cueRLeg" class="cueRLeg" x1="86" y1="99" x2="105" y2="143" stroke="#294b91" stroke-width="13" stroke-linecap="round"/></g></svg></div>
+<div id="moveCue" aria-label="إشارة الحركة"><div id="cueStage"></div></div>
 <div class="hud"><div class="chip">🎤 <span id="micState">انتظار</span></div><div class="chip">⭐ <span id="score">0</span></div><div class="chip">📚 <span id="count">0/0</span></div></div>
 <div class="avatarWrap" id="aw"><svg id="avatar" viewBox="0 0 260 350"><ellipse cx="130" cy="336" rx="55" ry="11" fill="#000" opacity=".18"/>
 <line id="torso" x1="130" y1="108" x2="130" y2="215" stroke="#18a6b9" stroke-width="42" stroke-linecap="round"/>
@@ -125,19 +119,19 @@ function renderStats(){
  let avg=n?Math.round(activationLog.reduce((s,r)=>s+r.accuracy,0)/n):0;
  $("statsSummary").innerHTML="<h3>عدد الطلاب المفعّلين: "+n+" من "+target+" — نسبة التفعيل: "+rate+"% — متوسط دقة القراءة: "+avg+"%</h3>";
  $("statsTable").innerHTML="<table style='width:100%;border-collapse:collapse'><tr><th>م</th><th>الاسم</th><th>الصف</th><th>المستوى</th><th>المدة</th><th>الصحيح</th><th>الحركات</th><th>المحاولات</th><th>الدقة</th><th>النقاط</th></tr>"+
- activationLog.map((r,j)=>"<tr><td>"+(j+1)+"</td><td>"+r.name+"</td><td>"+r.className+"</td><td>"+r.level+"</td><td>"+fmtTime(r.duration)+"</td><td>"+r.correct+"</td><td>"+r.moves+"</td><td>"+r.accuracy+"%</td></tr>").join("")+"</table>";
+ activationLog.map((r,j)=>"<tr><td>"+(j+1)+"</td><td>"+r.name+"</td><td>"+r.className+"</td><td>"+r.level+"</td><td>"+fmtTime(r.duration)+"</td><td>"+r.correct+"</td><td>"+r.moves+"</td><td>"+r.attempts+"</td><td>"+r.accuracy+"%</td><td>"+r.score+"</td></tr>").join("")+"</table>";
 }
 
 const L1=[
-["ا",["ا","الف","ألف","اسد"],"أَسَد"],["ب",["ب","باء","باب"],"بَاب"],["ت",["ت","تاء","تفاح"],"تُفَّاح"],["ث",["ث","ثاء","ثعلب"],"ثَعْلَب"],["ج",["ج","جيم","جمل"],"جَمَل"],["ح",["ح","حاء","حليب"],"حَلِيب"],["خ",["خ","خاء","خبز"],"خُبْز"],["د",["د","دال","دب"],"دُب"],["ذ",["ذ","ذال","ذرة"],"ذُرَة"],["ر",["ر","راء","رمان"],"رُمَّان"],["ز",["ز","زاي","زين","زهرة"],"زَهْرَة"],["س",["س","سين","سمك"],"سَمَك"],["ش",["ش","شين","شمس"],"شَمْس"],["ص",["ص","صاد","صقر"],"صَقْر"],["ض",["ض","ضاد","ضفدع"],"ضِفْدَع"],["ط",["ط","طاء","طائر","طير"],"طَائِر"],["ظ",["ظ","ظاء","ظرف"],"ظَرْف"],["ع",["ع","عين","عنب"],"عِنَب"],["غ",["غ","غين","غيم"],"غَيْم"],["ف",["ف","فاء","فيل"],"فِيل"],["ق",["ق","قاف","قلم"],"قَلَم"],["ك",["ك","كاف","كتاب"],"كِتَاب"],["ل",["ل","لام","ليمون"],"لَيْمُون"],["م",["م","ميم","موز"],"مَوْز"],["ن",["ن","نون","نجم"],"نَجْم"],["ه",["ه","هاء","هلال"],"هِلَال"],["و",["و","واو","ورد"],"وَرْد"],["ي",["ي","ياء","يد"],"يَد"]];
+["ا",["ا","الف","ألف"],"أَسَد"],["ب",["ب","باء"],"بَاب"],["ت",["ت","تاء"],"تُفَّاح"],["ث",["ث","ثاء"],"ثَعْلَب"],["ج",["ج","جيم"],"جَمَل"],["ح",["ح","حاء"],"حَلِيب"],["خ",["خ","خاء"],"خُبْز"],["د",["د","دال"],"دُب"],["ذ",["ذ","ذال"],"ذُرَة"],["ر",["ر","راء"],"رُمَّان"],["ز",["ز","زاي","زين"],"زَهْرَة"],["س",["س","سين"],"سَمَك"],["ش",["ش","شين"],"شَمْس"],["ص",["ص","صاد"],"صَقْر"],["ض",["ض","ضاد"],"ضِفْدَع"],["ط",["ط","طاء"],"طَائِر"],["ظ",["ظ","ظاء"],"ظَرْف"],["ع",["ع","عين"],"عِنَب"],["غ",["غ","غين"],"غَيْم"],["ف",["ف","فاء"],"فِيل"],["ق",["ق","قاف"],"قَلَم"],["ك",["ك","كاف"],"كِتَاب"],["ل",["ل","لام"],"لَيْمُون"],["م",["م","ميم"],"مَوْز"],["ن",["ن","نون"],"نَجْم"],["ه",["ه","هاء"],"هِلَال"],["و",["و","واو"],"وَرْد"],["ي",["ي","ياء"],"يَد"]];
 const L2=[["بَاب",["باب"]],["قَلَم",["قلم"]],["مَوْز",["موز"]],["سَمَك",["سمك"]],["كِتَاب",["كتاب"]],["وَرْد",["ورد"]],["بَيْت",["بيت"]],["يَد",["يد"]],["عَيْن",["عين"]],["شَمْس",["شمس"]],["قَمَر",["قمر"]],["مَاء",["ماء"]],["حَلِيب",["حليب"]],["خُبْز",["خبز"]],["تُفَّاح",["تفاح"]],["عِنَب",["عنب"]],["فِيل",["فيل"]],["جَمَل",["جمل"]],["نَجْم",["نجم"]],["كُرَة",["كرة"]],["وَلَد",["ولد"]],["بِنْت",["بنت"]],["مَدْرَسَة",["مدرسة"]],["قِصَّة",["قصة"]],["بَحْر",["بحر"]],["نُور",["نور"]],["نَار",["نار"]],["لَوْن",["لون"]],["طَائِر",["طائر","طير"]],["لَيْمُون",["ليمون"]]];
 const L3=[["قَمَر",["قمر"],"bothUp"],["شَمْس",["شمس"],"rightUp"],["بَحْر",["بحر"],"leftUp"],["كِتَاب",["كتاب"],"armsOpen"],["نَجْم",["نجم"],"leanRight"],["وَرْد",["ورد"],"leanLeft"],["جَمَل",["جمل"],"knee"],["مَوْز",["موز"],"squat"],["فِيل",["فيل"],"jump"],["قَلَم",["قلم"],"bothUp"],["بَيْت",["بيت"],"armsOpen"],["سَمَك",["سمك"],"rightUp"],["عِنَب",["عنب"],"leftUp"],["طَائِر",["طائر","طير"],"leanRight"],["لَيْمُون",["ليمون"],"leanLeft"],["هِلَال",["هلال"],"knee"],["أَسَد",["اسد"],"squat"],["كُرَة",["كرة"],"jump"]];
 const L4=[["قَمَرٌ جَمِيل",["قمر جميل"],"bothUp"],["شَمْسٌ سَاطِعَة",["شمس ساطعة"],"rightUp"],["بَحْرٌ أَزْرَق",["بحر ازرق"],"leftUp"],["كِتَابٌ مُفِيد",["كتاب مفيد"],"armsOpen"],["نَجْمٌ لَامِع",["نجم لامع"],"leanRight"],["وَرْدٌ جَمِيل",["ورد جميل"],"leanLeft"],["جَمَلٌ كَبِير",["جمل كبير"],"knee"],["مَوْزٌ أَصْفَر",["موز اصفر"],"squat"],["طَائِرٌ صَغِير",["طائر صغير","طير صغير"],"jump"],["قَلَمٌ جَدِيد",["قلم جديد"],"bothUp"],["بَيْتٌ كَبِير",["بيت كبير"],"armsOpen"],["سَمَكٌ صَغِير",["سمك صغير"],"rightUp"],["عِنَبٌ لَذِيذ",["عنب لذيذ"],"leftUp"],["فِيلٌ ضَخْم",["فيل ضخم"],"leanRight"],["لَيْمُونٌ أَصْفَر",["ليمون اصفر"],"leanLeft"],["هِلَالٌ جَمِيل",["هلال جميل"],"knee"],["أَسَدٌ قَوِي",["اسد قوي"],"squat"],["كُرَةٌ حَمْرَاء",["كرة حمراء"],"jump"]];
 const L5=[["أَنَا أُحِبُّ القِرَاءَة",["انا احب القراءة"],"bothUp"],["الشَّمْسُ تُضِيءُ السَّمَاء",["الشمس تضيء السماء"],"rightUp"],["القَمَرُ يَظْهَرُ لَيْلًا",["القمر يظهر ليلا"],"leftUp"],["أَقْرَأُ كِتَابًا مُفِيدًا",["اقرا كتابا مفيدا"],"armsOpen"],["أَرَى نَجْمًا لَامِعًا",["ارى نجما لامعا"],"leanRight"],["فِي الحَدِيقَةِ وَرْدٌ جَمِيل",["في الحديقة ورد جميل"],"leanLeft"],["الجَمَلُ يَمْشِي فِي الصَّحْرَاء",["الجمل يمشي في الصحراء"],"knee"],["المَوْزُ فَاكِهَةٌ لَذِيذَة",["الموز فاكهة لذيذة"],"squat"],["الطَّائِرُ يُحَلِّقُ فِي السَّمَاء",["الطائر يحلق في السماء","الطير يحلق في السماء"],"jump"],["أَكْتُبُ بِقَلَمِي كُلَّ يَوْم",["اكتب بقلمي كل يوم"],"bothUp"],["بَيْتِي قَرِيبٌ مِنَ المَدْرَسَة",["بيتي قريب من المدرسة"],"armsOpen"],["السَّمَكُ يَسْبَحُ فِي المَاءِ",["السمك يسبح في الماء"],"rightUp"],["العِنَبُ فَاكِهَةٌ حُلْوَة",["العنب فاكهة حلوة"],"leftUp"],["الفِيلُ حَيَوَانٌ كَبِير",["الفيل حيوان كبير"],"leanRight"],["اللَّيْمُونُ لَوْنُهُ أَصْفَر",["الليمون لونه اصفر"],"leanLeft"],["الهِلَالُ يَظْهَرُ فِي السَّمَاء",["الهلال يظهر في السماء"],"knee"],["الأَسَدُ حَيَوَانٌ قَوِي",["الاسد حيوان قوي"],"squat"],["أَلْعَبُ بِالكُرَةِ مَعَ أَصْدِقَائِي",["العب بالكرة مع اصدقائي"],"jump"]];
 const LEVELS={1:L1,2:L2,3:L3,4:L4,5:L5};
 const $=x=>document.getElementById(x),norm=s=>(s||"").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[إأآ]/g,"ا").replace(/ى/g,"ي").replace(/[^\u0600-\u06FF ]/g,"").replace(/\s+/g," ").trim();
-let items=[],i=0,score=0,pose,stream,cal=false,samples=[],processing=false,prev=null,still=0,lastAct=0,readOK=false,moveOK=false,rec=null,recRunning=false,spawnTimer=null,level=1,promptToken=0,nextTimer=null,musicCtx=null,musicGain=null,musicTimer=null,audioCtx=null,audioAnalyser=null,micWatch=null,restartTimer=null,advanceUnlocked=false,advanceReason="",prevHandDist=null;
-let speechLangs=["ar-BH","ar-SA"],speechLangIndex=0,recognitionHadResult=false,recognitionWatchdog=null,speechFallbackStartedAt=0;
+let items=[],i=0,score=0,pose,stream,cal=false,samples=[],processing=false,prev=null,still=0,lastAct=0,readOK=false,moveOK=false,rec=null,recRunning=false,spawnTimer=null,level=1,promptToken=0,nextTimer=null,musicCtx=null,musicGain=null,musicTimer=null,audioCtx=null,audioAnalyser=null,micWatch=null,restartTimer=null,advanceUnlocked=false,advanceReason="",prevHandDist=null,promptVoiceSeen=false,promptVoicePeak=0;
+
 let base={x:.5,hip:.62,sh:.35,span:.2},T={side:.05,jump:.04,duck:.05,clap:.1};const cur=()=>items[i];
 let actionHold="",actionFrames=0;
 
@@ -155,7 +149,7 @@ function applause(){
 function line(id,a,b){let e=$(id);e.setAttribute("x1",a.x);e.setAttribute("y1",a.y);e.setAttribute("x2",b.x);e.setAttribute("y2",b.y)}
 function avatar(p){let ks=[11,12,13,14,15,16,23,24,25,26,27,28];if(ks.some(k=>!p[k]))return;let xs=ks.map(k=>p[k].x),ys=ks.map(k=>p[k].y),mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys),w=Math.max(.25,mxx-mnx),h=Math.max(.45,mxy-mny),cx=(mnx+mxx)/2;const M=k=>({x:130+((1-p[k].x)-(1-cx))/w*165,y:105+(p[k].y-mny)/h*220});let ls=M(11),rs=M(12),le=M(13),re=M(14),lw=M(15),rw=M(16),lh=M(23),rh=M(24),lk=M(25),rk=M(26),la=M(27),ra=M(28),sh={x:(ls.x+rs.x)/2,y:(ls.y+rs.y)/2},hp={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/2};line("torso",sh,hp);line("uaL",ls,le);line("faL",le,lw);line("uaR",rs,re);line("faR",re,rw);line("thL",lh,lk);line("shL",lk,la);line("thR",rh,rk);line("shR",rk,ra);$("face").setAttribute("transform","translate("+(sh.x-130)+" "+(Math.max(38,sh.y-52)-62)+")")}
 function measure(p){let ls=p[11],rs=p[12],lh=p[23],rh=p[24];return{x:(ls.x+rs.x+lh.x+rh.x)/4,hip:(lh.y+rh.y)/2,sh:(ls.y+rs.y)/2,span:Math.abs(ls.x-rs.x),ls,rs,lw:p[15],rw:p[16],lk:p[25],rk:p[26]}}
-function calibrate(m){samples.push(m);let pc=Math.min(100,Math.round(samples.length/28*100));$("calBar").style.width=pc+"%";$("boot").textContent="المعايرة السريعة… "+pc+"%";if(samples.length>=28){["x","hip","sh","span"].forEach(k=>base[k]=samples.reduce((s,q)=>s+q[k],0)/samples.length);T.side=Math.max(.038,base.span*.21);T.jump=Math.max(.03,base.span*.15);T.duck=Math.max(.04,base.span*.20);cal=true;$("boot").textContent="جاهز ✓";setTimeout(()=>{$("startOverlay").style.display="none";round();beginStudentTimer()},300)}}
+function calibrate(m){samples.push(m);let pc=Math.min(100,Math.round(samples.length/28*100));$("calBar").style.width=pc+"%";$("boot").textContent="المعايرة السريعة… "+pc+"%";if(samples.length>=28){["x","hip","sh","span"].forEach(k=>base[k]=samples.reduce((s,q)=>s+q[k],0)/samples.length);T.side=Math.max(.038,base.span*.21);T.jump=Math.max(.03,base.span*.15);T.duck=Math.max(.04,base.span*.20);cal=true;$("boot").textContent="جاهز ✓";setTimeout(()=>{$("startOverlay").style.display="none";beginStudentTimer();round()},300)}}
 function infer(m){
  if(!cal){calibrate(m);return}
  if(level<3||!readOK||moveOK||!cur())return;
@@ -210,81 +204,67 @@ function setupRecognition(){
  let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR){$("micState").textContent="غير مدعوم";$("message").textContent="التعرف الصوتي غير متاح";return}
  rec=new SR();
- rec.lang=speechLangs[speechLangIndex];
- rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;
+ rec.lang="ar-SA";
+ rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=5;
  $("micState").textContent="جاهز";
 }
 function listenForCurrent(token){
  if(!rec||readOK||token!==promptToken||i>=items.length||recRunning||sessionEnded)return;
- recognitionHadResult=false;
- rec.lang=speechLangs[speechLangIndex];
+ rec.lang="ar-SA";
  let diagText=document.getElementById("diagText");
  let diagRec=document.getElementById("diagRec");
  if(diagText)diagText.textContent="—";
  rec.onstart=()=>{
    recRunning=true;$("micState").textContent="مفتوح";duckMusic(true);
-   if(diagRec)diagRec.textContent="يستمع الآن ✓ ("+rec.lang+")";
-   $("instruction").textContent=level===1?"🎤 انطق الحرف الآن":"🎤 اقرأ الآن";
-   clearTimeout(recognitionWatchdog);
-   if(!speechFallbackStartedAt)speechFallbackStartedAt=Date.now();
-   let remaining=Math.max(250,1800-(Date.now()-speechFallbackStartedAt));
-   recognitionWatchdog=setTimeout(()=>{
-     if(token!==promptToken||readOK||sessionEnded||recognitionHadResult)return;
-     if(promptVoiceSeen&&speechLangIndex===0){
-       speechLangIndex=1;
-       rec.lang=speechLangs[speechLangIndex];
-       if(diagRec)diagRec.textContent="لم يرجع نص من ar-BH — التحويل إلى ar-SA";
-       try{rec.abort()}catch(e){}
-     }
-   },remaining);
+   if(diagRec)diagRec.textContent="يستمع الآن ✓ (ar-SA)";
+   $("instruction").textContent=level===1?"🎤 انطق اسم الحرف الآن":"🎤 اقرأ الآن";
  };
  rec.onresult=e=>{
    if(token!==promptToken||sessionEnded)return;
-   recognitionHadResult=true;
-   clearTimeout(recognitionWatchdog);
    let heard=[];
    for(let r=e.resultIndex;r<e.results.length;r++)for(let k=0;k<e.results[r].length;k++){let t=norm(e.results[r][k].transcript);if(t)heard.push(t)}
    if(diagText&&heard.length)diagText.textContent=heard.join(" | ");
-   if(heard.length)checkSpeech(heard,token);
+   // وصول Transcript من Edge دليل مباشر على وجود كلام؛ لا نرفض نتيجة صحيحة بسبب تأخر مقياس الصوت جزءًا من الثانية.
+   if(heard.length){ promptVoiceSeen=true; checkSpeech(heard,token); }
  };
  rec.onerror=e=>{
    recRunning=false;duckMusic(false);
    let err=e.error||"غير معروف";
-   if(diagRec)diagRec.textContent="خطأ: "+err+" ("+rec.lang+")"; let de=document.getElementById("diagError");if(de)de.textContent=err;
-   if(token!==promptToken||sessionEnded)return;
+   let de=document.getElementById("diagError");
    if(err==="aborted"){
-     if(diagRec)diagRec.textContent=speechLangIndex===1?"الانتقال إلى ar-SA…":"إعادة تشغيل الاستماع…";
-     scheduleRecognition(180);
+     if(diagRec)diagRec.textContent="إعادة تشغيل الاستماع…";
+     if(de)de.textContent="—";
+     if(token===promptToken&&!sessionEnded&&!readOK)scheduleRecognition(180);
      return;
    }
-   clearTimeout(recognitionWatchdog);
+   if(diagRec)diagRec.textContent="خطأ: "+err+" (ar-SA)";
+   if(de)de.textContent=err;
+   if(token!==promptToken||sessionEnded)return;
    if(err==="not-allowed"||err==="service-not-allowed"){$("micState").textContent="الإذن مرفوض";$("message").textContent="🎤 اسمح للميكروفون من المتصفح";return}
-   if((err==="no-speech"||err==="network"||err==="language-not-supported")&&speechLangIndex===0)speechLangIndex=1;
    $("micState").textContent="إعادة تلقائية";scheduleRecognition(250);
  };
  rec.onend=()=>{
    recRunning=false;duckMusic(false);
    if(token===promptToken&&!readOK&&!sessionEnded){$("micState").textContent="إعادة تلقائية";scheduleRecognition(180)}
  };
- try{rec.start()}catch(err){recRunning=false;clearTimeout(recognitionWatchdog);if(diagRec)diagRec.textContent="تعذر البدء: "+err.message;scheduleRecognition(350)}
+ try{rec.start()}catch(err){recRunning=false;if(diagRec)diagRec.textContent="تعذر البدء: "+err.message;scheduleRecognition(350)}
 }
-function resetCuePose(){
- const la=$("cueLArm"),ra=$("cueRArm"),ll=$("cueLLeg"),rl=$("cueRLeg"),b=$("cueBody");
- [la,ra,ll,rl].forEach(e=>e.setAttribute("transform",""));b.setAttribute("transform","");
+function cueFigure(action){
+ const head='<circle cx="110" cy="48" r="22" fill="#f4b78f" stroke="#24364b" stroke-width="5"/><line x1="110" y1="72" x2="110" y2="137" stroke="#18a6b9" stroke-width="20" stroke-linecap="round"/>';
+ const legs='<line x1="104" y1="134" x2="82" y2="190" stroke="#294b91" stroke-width="15" stroke-linecap="round"/><line x1="116" y1="134" x2="138" y2="190" stroke="#294b91" stroke-width="15" stroke-linecap="round"/>';
+ const baseArmL='<line x1="101" y1="85" x2="65" y2="125" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"/>';
+ const baseArmR='<line x1="119" y1="85" x2="155" y2="125" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"/>';
+ if(action==="bothUp")return `<svg viewBox="0 0 220 220"><g>${head}${legs}<line x1="101" y1="85" x2="70" y2="40" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="y2" values="125;35;35;125" dur="1.5s" repeatCount="indefinite"/></line><line x1="119" y1="85" x2="150" y2="40" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="y2" values="125;35;35;125" dur="1.5s" repeatCount="indefinite"/></line></g><text x="52" y="34" class="cueArrow">↑</text><text x="150" y="34" class="cueArrow">↑</text></svg>`;
+ if(action==="rightUp")return `<svg viewBox="0 0 220 220"><g>${head}${legs}${baseArmR}<line x1="101" y1="85" x2="70" y2="35" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="y2" values="125;32;32;125" dur="1.35s" repeatCount="indefinite"/></line></g><text x="43" y="32" class="cueArrow">↑</text><path d="M92 202 Q110 211 128 202" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/></svg>`;
+ if(action==="leftUp")return `<svg viewBox="0 0 220 220"><g>${head}${legs}${baseArmL}<line x1="119" y1="85" x2="150" y2="35" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="y2" values="125;32;32;125" dur="1.35s" repeatCount="indefinite"/></line></g><text x="151" y="32" class="cueArrow">↑</text><path d="M92 202 Q110 211 128 202" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/></svg>`;
+ if(action==="armsOpen")return `<svg viewBox="0 0 220 220"><g>${head}${legs}<line x1="101" y1="88" x2="45" y2="88" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="x2" values="75;35;35;75" dur="1.5s" repeatCount="indefinite"/></line><line x1="119" y1="88" x2="175" y2="88" stroke="#f4b78f" stroke-width="14" stroke-linecap="round"><animate attributeName="x2" values="145;185;185;145" dur="1.5s" repeatCount="indefinite"/></line></g><text x="12" y="99" class="cueArrow">←</text><text x="178" y="99" class="cueArrow">→</text></svg>`;
+ if(action==="leanRight"||action==="leanLeft"){let dir=action==="leanRight"?-1:1,arrow=dir>0?'→':'←',x=dir>0?170:18;return `<svg viewBox="0 0 220 220"><g transform="rotate(${dir*16} 110 125)">${head}${legs}${baseArmL}${baseArmR}<animateTransform attributeName="transform" type="rotate" values="0 110 125;${dir*18} 110 125;${dir*18} 110 125;0 110 125" dur="1.6s" repeatCount="indefinite"/></g><text x="${x}" y="112" class="cueArrow">${arrow}</text></svg>`}
+ if(action==="knee")return `<svg viewBox="0 0 220 220"><g>${head}${baseArmL}${baseArmR}<line x1="104" y1="134" x2="82" y2="190" stroke="#294b91" stroke-width="15" stroke-linecap="round"/><polyline points="116,134 145,145 145,112" fill="none" stroke="#294b91" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"><animate attributeName="points" values="116,134 138,185 142,198;116,134 148,145 148,108;116,134 148,145 148,108;116,134 138,185 142,198" dur="1.6s" repeatCount="indefinite"/></polyline></g><text x="153" y="122" class="cueArrow">↑</text></svg>`;
+ if(action==="squat")return `<svg viewBox="0 0 220 220"><g>${head}${baseArmL}${baseArmR}${legs}<animateTransform attributeName="transform" type="translate" values="0 0;0 30;0 30;0 0" dur="1.6s" repeatCount="indefinite"/></g><text x="178" y="170" class="cueArrow">↓</text></svg>`;
+ return `<svg viewBox="0 0 220 220"><line x1="30" y1="199" x2="190" y2="199" stroke="#a9b4c0" stroke-width="5"/><g>${head}${baseArmL}${baseArmR}${legs}<animateTransform attributeName="transform" type="translate" values="0 0;0 -35;0 -35;0 0" dur="1.2s" repeatCount="indefinite"/></g><text x="174" y="75" class="cueArrow">↑</text></svg>`;
 }
-function showMoveCue(action){
- resetCuePose(); const box=$("moveCue"),la=$("cueLArm"),ra=$("cueRArm"),ll=$("cueLLeg"),rl=$("cueRLeg"),b=$("cueBody");
- box.style.display="flex";box.classList.add("cuePulse");
- if(action==="bothUp"){la.setAttribute("transform","rotate(145 72 61)");ra.setAttribute("transform","rotate(-145 88 61)")}
- if(action==="rightUp"){ra.setAttribute("transform","rotate(-145 88 61)")}
- if(action==="leftUp"){la.setAttribute("transform","rotate(145 72 61)")}
- if(action==="armsOpen"){la.setAttribute("transform","rotate(45 72 61)");ra.setAttribute("transform","rotate(-45 88 61)")}
- if(action==="leanRight"){b.setAttribute("transform","rotate(16 80 100)")}
- if(action==="leanLeft"){b.setAttribute("transform","rotate(-16 80 100)")}
- if(action==="knee"){rl.setAttribute("transform","rotate(-62 86 99)")}
- if(action==="squat"){b.setAttribute("transform","translate(0 20) scale(1 .78)");ll.setAttribute("transform","rotate(28 74 99)");rl.setAttribute("transform","rotate(-28 86 99)")}
- if(action==="jump"){b.setAttribute("transform","translate(0 -20)");la.setAttribute("transform","rotate(125 72 61)");ra.setAttribute("transform","rotate(-125 88 61)")}
-}
+function resetCuePose(){let st=$("cueStage");if(st)st.innerHTML=""}
+function showMoveCue(action){let box=$("moveCue"),st=$("cueStage");st.innerHTML=cueFigure(action);box.style.display="flex";box.classList.add("cuePulse")}
 function hideMoveCue(){let b=$("moveCue");if(b){b.style.display="none";b.classList.remove("cuePulse")}resetCuePose()}
 function checkSpeech(h,token){
   if(!promptVoiceSeen) return;
@@ -293,14 +273,19 @@ function checkSpeech(h,token){
  studentAttempts++;
  let answers=cur()[1].map(norm);
  let ok;
- if(level===1){ok=answers.some(a=>h.some(x=>x===a || (a.length>1&&x.includes(a))))}
- else{ok=answers.some(a=>h.some(x=>x===a || (a.length>1&&x.includes(a))))}
+ if(level===1){
+   // الحروف: قبول مضبوط فقط — اسم الحرف/الحرف نفسه/كلمة المثال المسجلة.
+   // لا نستخدم includes هنا حتى لا تُقبل كلمة عشوائية لمجرد احتوائها على الحرف.
+   ok=answers.some(a=>h.some(x=>x===a));
+ } else {
+   ok=answers.some(a=>h.some(x=>x===a || (a.length>1&&x.includes(a))));
+ }
  if(!ok){$("message").textContent="🔁 حاول مرة أخرى";$("micState").textContent="مفتوح";duckMusic(true);return}
  readOK=true;studentCorrect++;duckMusic(false);$("micState").textContent="صحيح ✓";score+=10;$("score").textContent=score;applause();
  $("game").classList.add("flash");setTimeout(()=>$("game").classList.remove("flash"),450);
  if(level===1){
    $("message").textContent="👏 ممتاز!";
-   $("word").textContent=cur()[2];$("instruction").textContent="مثال يبدأ بهذا الحرف";
+   $("word").style.fontSize="clamp(52px,7vw,86px)";$("word").textContent=cur()[2];$("instruction").textContent="مثال يبدأ بهذا الحرف";
    unlockAdvance("reading");
    clearTimeout(nextTimer);nextTimer=setTimeout(()=>advance("reading"),2400);
  }else if(level===2){
@@ -342,9 +327,9 @@ function round(){
 
  clearTimeout(nextTimer);advanceUnlocked=false;advanceReason="";
  promptToken++; promptVoiceSeen=false; promptVoicePeak=0;readOK=false;moveOK=false;still=0;prev=null;prevHandDist=null;actionHold="";actionFrames=0;hideMoveCue();
- speechLangIndex=0;recognitionHadResult=false;speechFallbackStartedAt=Date.now();clearTimeout(recognitionWatchdog);
  $("count").textContent=(i+1)+"/"+items.length;$("word").textContent=cur()[0];
- $("instruction").textContent=level===1?"استعد لنطق الحرف":"استعد للقراءة";
+ $("word").style.fontSize=level===1?"clamp(90px,11vw,150px)":"";
+ $("instruction").textContent=level===1?"🎤 انطق اسم الحرف":"استعد للقراءة";
  $("message").textContent="";$("micState").textContent="استعد";
  let t=promptToken;setTimeout(()=>listenForCurrent(t),350);
 }
@@ -367,7 +352,7 @@ $("start").onclick=async()=>{try{
    $("boot").textContent="جارٍ تشغيل الكاميرا والميكروفون…";
    await setup();setupDone=true;$("boot").textContent="قف طبيعيًا للمعايرة السريعة…";
  }else if(cal){
-   $("boot").textContent="جاهز ✓";$("startOverlay").style.display="none";round();beginStudentTimer();
+   $("boot").textContent="جاهز ✓";$("startOverlay").style.display="none";beginStudentTimer();round();
  }else{
    $("boot").textContent="قف طبيعيًا للمعايرة السريعة…";
  }
@@ -391,17 +376,11 @@ $("nextStudent").onclick=()=>{
 };
 $("showStats").onclick=()=>{renderStats();$("statsOverlay").style.display="block"};
 $("closeStats").onclick=()=>{$("statsOverlay").style.display="none"};
-</script><audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio><div id="speechDiag" style="position:fixed;right:14px;bottom:14px;z-index:99999;background:#071b2fee;color:white;padding:12px 15px;border-radius:16px;font-family:Tahoma;direction:rtl;min-width:300px"><b>تشخيص الصوت — V14</b><div>🎤 وصول الصوت: <strong id="diagAudio">بانتظار الصوت</strong></div><div>👂 محرك الاستماع: <strong id="diagRec">غير معروف</strong></div><div>🌐 لغة المحرك: <strong id="diagLang">ar-BH</strong></div><div>📝 Edge سمع: <strong id="diagText">—</strong></div><div>⚠️ آخر حالة: <strong id="diagError">—</strong></div></div><script>
+</script><audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio><div id="speechDiag" style="position:fixed;right:14px;bottom:14px;z-index:99999;background:#071b2fee;color:white;padding:12px 15px;border-radius:16px;font-family:Tahoma;direction:rtl;min-width:300px"><b>تشخيص الصوت — V14.6</b><div>🎤 وصول الصوت: <strong id="diagAudio">بانتظار الصوت</strong></div><div>👂 محرك الاستماع: <strong id="diagRec">غير معروف</strong></div><div>🌐 لغة المحرك: <strong id="diagLang">ar-SA</strong></div><div>📝 Edge سمع: <strong id="diagText">—</strong></div><div>⚠️ آخر حالة: <strong id="diagError">—</strong></div></div><script>
 setInterval(()=>{try{
  document.getElementById("diagAudio").textContent=(typeof promptVoiceSeen!=="undefined"&&promptVoiceSeen)?"الصوت وصل ✓":"لم يصل صوت بعد";
- document.getElementById("diagRec").textContent=(typeof recRunning!=="undefined"&&recRunning)?"يستمع الآن ✓":"متوقف";
- let dl=document.getElementById("diagLang");if(dl)dl.textContent=(typeof speechLangs!=="undefined")?speechLangs[speechLangIndex]:"—";
+ let dr=document.getElementById("diagRec");
+ if(dr && typeof recRunning!=="undefined" && recRunning && !dr.textContent.startsWith("خطأ"))dr.textContent="يستمع الآن ✓";
+ let dl=document.getElementById("diagLang");if(dl)dl.textContent="ar-SA";
 }catch(e){}},250);
-window.addEventListener("load",()=>{try{
- if(typeof rec!=="undefined"&&rec){
-  rec.addEventListener("result",e=>{let a=[];for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i][0])a.push(e.results[i][0].transcript);if(a.length)document.getElementById("diagText").textContent=a.join(" | ")});
-  rec.addEventListener("start",()=>document.getElementById("diagRec").textContent="يستمع الآن ✓");
-  rec.addEventListener("end",()=>document.getElementById("diagRec").textContent="توقف/يعيد التشغيل…");
-  rec.addEventListener("error",e=>document.getElementById("diagRec").textContent="خطأ: "+e.error);
- }
-}catch(e){}});</script></body></html>
+</script></body></html>
