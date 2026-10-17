@@ -303,4 +303,16 @@ $("nextStudent").onclick=()=>{
 };
 $("showStats").onclick=()=>{renderStats();$("statsOverlay").style.display="block"};
 $("closeStats").onclick=()=>{$("statsOverlay").style.display="none"};
-</script><audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio></body></html>
+</script><audio id="bgMusic" src="masar_energy_loop.wav" preload="auto" loop></audio><div id="speechDiag" style="position:fixed;left:14px;bottom:14px;z-index:99999;background:#071b2fee;color:white;padding:12px 15px;border-radius:16px;font-family:Tahoma;direction:rtl;min-width:300px"><b>تشخيص الصوت</b><div>🎤 وصول الصوت: <strong id="diagAudio">بانتظار الصوت</strong></div><div>👂 محرك الاستماع: <strong id="diagRec">غير معروف</strong></div><div>📝 Edge سمع: <strong id="diagText">—</strong></div></div><script>
+setInterval(()=>{try{
+ document.getElementById("diagAudio").textContent=(typeof promptVoiceSeen!=="undefined"&&promptVoiceSeen)?"الصوت وصل ✓":"لم يصل صوت بعد";
+ document.getElementById("diagRec").textContent=(typeof recRunning!=="undefined"&&recRunning)?"يستمع الآن ✓":"متوقف";
+}catch(e){}},250);
+window.addEventListener("load",()=>{try{
+ if(typeof rec!=="undefined"&&rec){
+  rec.addEventListener("result",e=>{let a=[];for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i][0])a.push(e.results[i][0].transcript);if(a.length)document.getElementById("diagText").textContent=a.join(" | ")});
+  rec.addEventListener("start",()=>document.getElementById("diagRec").textContent="يستمع الآن ✓");
+  rec.addEventListener("end",()=>document.getElementById("diagRec").textContent="توقف/يعيد التشغيل…");
+  rec.addEventListener("error",e=>document.getElementById("diagRec").textContent="خطأ: "+e.error);
+ }
+}catch(e){}});</script></body></html>
